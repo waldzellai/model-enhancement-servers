@@ -1,4 +1,5 @@
 # Analogical Reasoning MCP Server
+[![smithery badge](https://smithery.ai/badge/@waldzellai/analogical-reasoning)](https://smithery.ai/server/@waldzellai/analogical-reasoning)
 
 ## Motivation
 
@@ -162,3 +163,11 @@ The server is implemented using TypeScript with:
 - Standard MCP server connection via stdin/stdout
 
 This server enhances model capabilities in domains requiring creative problem-solving, explanation of complex concepts, and transfer of knowledge between different fields or contexts.
+
+### Installing via Smithery
+
+To install Analogical Reasoning Server for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@waldzellai/analogical-reasoning):
+
+```bash
+npx -y @smithery/cli install @waldzellai/analogical-reasoning --client claude
+```
