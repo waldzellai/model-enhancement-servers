@@ -24,6 +24,8 @@ WORKDIR /app
 COPY --from=build /app/src/scientific-method/dist ./dist
 COPY --from=build /app/src/scientific-method/package.json ./
 
+ENV NODE_ENV=production
+
 # Install only production dependencies
 RUN npm ci --omit=dev
 

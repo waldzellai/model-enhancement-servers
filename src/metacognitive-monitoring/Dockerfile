@@ -24,6 +24,8 @@ WORKDIR /app
 COPY --from=build /app/src/metacognitive-monitoring/dist ./dist
 COPY --from=build /app/src/metacognitive-monitoring/package.json ./
 
+ENV NODE_ENV=production
+
 # Install only production dependencies
 RUN npm ci --omit=dev
 
