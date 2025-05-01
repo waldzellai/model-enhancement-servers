@@ -27,7 +27,7 @@ COPY --from=build /app/src/decision-framework/package.json ./
 ENV NODE_ENV=production
 
 # Install only production dependencies
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev --ignore-scripts
 
 # Set up entrypoint
 ENTRYPOINT ["node", "dist/index.js"]
