@@ -1,0 +1,28 @@
+{
+  "name": "@cognitive-enhancement-mcp/servers",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Cognitive Enhancement MCP Servers",
+  "license": "MIT",
+  "type": "module",
+  "workspaces": [
+    "src/*"
+  ],
+  "files": [],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "watch": "npm run watch --workspaces",
+    "prepare": "npm run build",
+    "publish-all": "npm publish --workspaces --access public",
+    "link-all": "npm link --workspaces"
+  },
+  "dependencies": {
+    "@cognitive-enhancement-mcp/analogical-reasoning": "*",
+    "@cognitive-enhancement-mcp/collaborative-reasoning": "*",
+    "@cognitive-enhancement-mcp/decision-framework": "*",
+    "@cognitive-enhancement-mcp/metacognitive-monitoring": "*",
+    "@cognitive-enhancement-mcp/scientific-method": "*",
+    "@cognitive-enhancement-mcp/structured-argumentation": "*",
+    "@cognitive-enhancement-mcp/visual-reasoning": "*"
+  }
+}

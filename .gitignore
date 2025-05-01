@@ -1,0 +1,9 @@
+cognitive-enhancement-servers/
+CLAUDE.md
+
+# scripts
+restructure.sh
+update-packages.sh
+.claude
+update-dockerfiles.sh
+update-packages.sh
