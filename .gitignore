@@ -7,3 +7,5 @@ update-packages.sh
 .claude
 update-dockerfiles.sh
 update-packages.sh
+
+node_modules/
