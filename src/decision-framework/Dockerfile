@@ -14,7 +14,7 @@ COPY src/decision-framework/*.ts ./src/decision-framework/
 RUN npm install
 
 # Build the server
-RUN npm run build --workspace=@cognitive-enhancement-mcp/decision-framework
+RUN npm run build --workspace=@waldzellai/decision-framework
 
 FROM node:20-alpine AS runtime
 

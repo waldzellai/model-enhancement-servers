@@ -14,7 +14,7 @@ COPY src/metacognitive-monitoring/*.ts ./src/metacognitive-monitoring/
 RUN npm install
 
 # Build the server
-RUN npm run build --workspace=@cognitive-enhancement-mcp/metacognitive-monitoring
+RUN npm run build --workspace=@waldzellai/metacognitive-monitoring
 
 FROM node:20-alpine AS runtime
 

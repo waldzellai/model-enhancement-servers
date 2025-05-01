@@ -14,7 +14,7 @@ COPY src/collaborative-reasoning/*.ts ./src/collaborative-reasoning/
 RUN npm install
 
 # Build the server
-RUN npm run build --workspace=@cognitive-enhancement-mcp/collaborative-reasoning
+RUN npm run build --workspace=@waldzellai/collaborative-reasoning
 
 FROM node:20-alpine AS runtime
 

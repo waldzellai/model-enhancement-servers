@@ -14,7 +14,7 @@ COPY src/structured-argumentation/*.ts ./src/structured-argumentation/
 RUN npm install
 
 # Build the server
-RUN npm run build --workspace=@cognitive-enhancement-mcp/structured-argumentation
+RUN npm run build --workspace=@waldzellai/structured-argumentation
 
 FROM node:20-alpine AS runtime
 

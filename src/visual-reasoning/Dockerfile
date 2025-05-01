@@ -14,7 +14,7 @@ COPY src/visual-reasoning/*.ts ./src/visual-reasoning/
 RUN npm install
 
 # Build the server
-RUN npm run build --workspace=@cognitive-enhancement-mcp/visual-reasoning
+RUN npm run build --workspace=@waldzellai/visual-reasoning
 
 FROM node:20-alpine AS runtime
 

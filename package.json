@@ -1,13 +1,13 @@
 {
-  "name": "@cognitive-enhancement-mcp/servers",
+  "name": "@waldzellai/servers",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Cognitive Enhancement MCP Servers",
   "license": "MIT",
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "https://github.com/peragus-dev/model-enhancement-servers.git"
+    "url": "https://github.com/waldzellai/model-enhancement-servers.git"
   },
   "workspaces": [
     "src/*"
@@ -21,12 +21,12 @@
     "link-all": "npm link --workspaces"
   },
   "dependencies": {
-    "@cognitive-enhancement-mcp/analogical-reasoning": "*",
-    "@cognitive-enhancement-mcp/collaborative-reasoning": "*",
-    "@cognitive-enhancement-mcp/decision-framework": "*",
-    "@cognitive-enhancement-mcp/metacognitive-monitoring": "*",
-    "@cognitive-enhancement-mcp/scientific-method": "*",
-    "@cognitive-enhancement-mcp/structured-argumentation": "*",
-    "@cognitive-enhancement-mcp/visual-reasoning": "*"
+    "@waldzellai/analogical-reasoning": "*",
+    "@waldzellai/collaborative-reasoning": "*",
+    "@waldzellai/decision-framework": "*",
+    "@waldzellai/metacognitive-monitoring": "*",
+    "@waldzellai/scientific-method": "*",
+    "@waldzellai/structured-argumentation": "*",
+    "@waldzellai/visual-reasoning": "*"
   }
 }

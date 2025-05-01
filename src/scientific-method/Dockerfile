@@ -14,7 +14,7 @@ COPY src/scientific-method/*.ts ./src/scientific-method/
 RUN npm install
 
 # Build the server
-RUN npm run build --workspace=@cognitive-enhancement-mcp/scientific-method
+RUN npm run build --workspace=@waldzellai/scientific-method
 
 FROM node:20-alpine AS runtime
 

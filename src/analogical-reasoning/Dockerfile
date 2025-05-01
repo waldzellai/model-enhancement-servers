@@ -14,7 +14,7 @@ COPY src/analogical-reasoning/*.ts ./src/analogical-reasoning/
 RUN npm install
 
 # Build the server
-RUN npm run build --workspace=@cognitive-enhancement-mcp/analogical-reasoning
+RUN npm run build --workspace=@waldzellai/analogical-reasoning
 
 FROM node:20-alpine AS runtime
 

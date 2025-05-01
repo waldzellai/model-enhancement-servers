@@ -1,18 +1,18 @@
 {
   "name": "@waldzellai/collaborative-reasoning",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "MCP server for diagrammatic thinking and spatial representation",
   "license": "MIT",
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "https://github.com/peragus-dev/model-enhancement-servers.git",
+    "url": "https://github.com/waldzellai/model-enhancement-servers.git",
     "directory": "src/collaborative-reasoning"
   },
   "publishConfig": {
     "access": "public"
   },
-  "homepage": "https://github.com/peragus-dev/model-enhancement-servers/tree/main/src/collaborative-reasoning",
+  "homepage": "https://github.com/waldzellai/model-enhancement-servers/tree/main/src/collaborative-reasoning",
   "author": "glassBead",
   "keywords": [
     "mcp",
