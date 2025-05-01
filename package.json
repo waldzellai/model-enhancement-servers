@@ -5,6 +5,10 @@
   "description": "Cognitive Enhancement MCP Servers",
   "license": "MIT",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/peragus-dev/model-enhancement-servers.git"
+  },
   "workspaces": [
     "src/*"
   ],

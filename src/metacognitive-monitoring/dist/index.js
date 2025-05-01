@@ -59,14 +59,23 @@ class MetacognitiveMonitoringServer {
                     knownLimitations.push(limitation);
                 }
             }
-            knowledgeAssessment = {
+            // Base object with required properties
+            const baseAssessment = {
                 domain: ka.domain,
                 knowledgeLevel: ka.knowledgeLevel,
                 confidenceScore: ka.confidenceScore,
                 supportingEvidence: ka.supportingEvidence,
                 knownLimitations,
-                relevantTrainingCutoff: typeof ka.relevantTrainingCutoff === 'string' ? ka.relevantTrainingCutoff : undefined
             };
+            // NOTE: exactOptionalPropertyTypes is enabled in tsconfig.json.
+            // This means we cannot explicitly assign 'undefined' to optional properties.
+            // Instead, we create a base object with required properties and only add
+            // optional properties if they have a valid value.
+            // Conditionally add optional property
+            if (typeof ka.relevantTrainingCutoff === 'string') {
+                baseAssessment.relevantTrainingCutoff = ka.relevantTrainingCutoff;
+            }
+            knowledgeAssessment = baseAssessment;
         }
         // Validate claims
         const claims = [];
@@ -92,14 +101,25 @@ class MetacognitiveMonitoringServer {
                         }
                     }
                 }
-                claims.push({
+                // Base object with required properties
+                const baseClaim = {
                     claim: claim.claim,
                     status: claim.status,
                     confidenceScore: claim.confidenceScore,
                     evidenceBasis: claim.evidenceBasis,
-                    alternativeInterpretations: alternativeInterpretations.length > 0 ? alternativeInterpretations : undefined,
-                    falsifiabilityCriteria: typeof claim.falsifiabilityCriteria === 'string' ? claim.falsifiabilityCriteria : undefined
-                });
+                };
+                // NOTE: exactOptionalPropertyTypes is enabled in tsconfig.json.
+                // This means we cannot explicitly assign 'undefined' to optional properties.
+                // Instead, we create a base object with required properties and only add
+                // optional properties if they have a valid value.
+                // Conditionally add optional properties
+                if (alternativeInterpretations.length > 0) {
+                    baseClaim.alternativeInterpretations = alternativeInterpretations;
+                }
+                if (typeof claim.falsifiabilityCriteria === 'string') {
+                    baseClaim.falsifiabilityCriteria = claim.falsifiabilityCriteria;
+                }
+                claims.push(baseClaim);
             }
         }
         // Validate reasoning steps
@@ -159,20 +179,34 @@ class MetacognitiveMonitoringServer {
             }
         }
         // Create validated data object
-        return {
+        const validatedData = {
             task: data.task,
             stage: data.stage,
-            knowledgeAssessment,
-            claims: claims.length > 0 ? claims : undefined,
-            reasoningSteps: reasoningSteps.length > 0 ? reasoningSteps : undefined,
             overallConfidence: data.overallConfidence,
             uncertaintyAreas,
             recommendedApproach: data.recommendedApproach,
             monitoringId: data.monitoringId,
             iteration: data.iteration,
             nextAssessmentNeeded: data.nextAssessmentNeeded,
-            suggestedAssessments: suggestedAssessments.length > 0 ? suggestedAssessments : undefined
         };
+        // NOTE: exactOptionalPropertyTypes is enabled in tsconfig.json.
+        // This means we cannot explicitly assign 'undefined' to optional properties.
+        // Instead, we create a base object with required properties and only add
+        // optional properties if they have a valid value.
+        // Conditionally add optional properties
+        if (knowledgeAssessment) {
+            validatedData.knowledgeAssessment = knowledgeAssessment;
+        }
+        if (claims.length > 0) {
+            validatedData.claims = claims;
+        }
+        if (reasoningSteps.length > 0) {
+            validatedData.reasoningSteps = reasoningSteps;
+        }
+        if (suggestedAssessments.length > 0) {
+            validatedData.suggestedAssessments = suggestedAssessments;
+        }
+        return validatedData;
     }
     updateRegistries(data) {
         // Update knowledge inventory if knowledge assessment is provided

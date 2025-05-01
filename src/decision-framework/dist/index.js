@@ -208,7 +208,7 @@ class DecisionFrameworkServer {
             }
         }
         // Create validated data object
-        return {
+        const validatedData = {
             decisionStatement: data.decisionStatement,
             options,
             stakeholders,
@@ -220,16 +220,40 @@ class DecisionFrameworkServer {
             stage: data.stage,
             iteration: data.iteration,
             nextStageNeeded: data.nextStageNeeded,
-            suggestedNextStage: typeof data.suggestedNextStage === 'string' ? data.suggestedNextStage : undefined,
-            criteria: criteria.length > 0 ? criteria : undefined,
-            criteriaEvaluations: criteriaEvaluations.length > 0 ? criteriaEvaluations : undefined,
-            possibleOutcomes: possibleOutcomes.length > 0 ? possibleOutcomes : undefined,
-            informationGaps: informationGaps.length > 0 ? informationGaps : undefined,
-            expectedValues: Object.keys(expectedValues).length > 0 ? expectedValues : undefined,
-            multiCriteriaScores: Object.keys(multiCriteriaScores).length > 0 ? multiCriteriaScores : undefined,
-            sensitivityInsights: sensitivityInsights.length > 0 ? sensitivityInsights : undefined,
-            recommendation: typeof data.recommendation === 'string' ? data.recommendation : undefined
         };
+        // NOTE: exactOptionalPropertyTypes is enabled in tsconfig.json.
+        // This means we cannot explicitly assign 'undefined' to optional properties.
+        // Instead, we create a base object with required properties and only add
+        // optional properties if they have a valid value.
+        // Conditionally add optional properties
+        if (typeof data.suggestedNextStage === 'string') {
+            validatedData.suggestedNextStage = data.suggestedNextStage;
+        }
+        if (criteria.length > 0) {
+            validatedData.criteria = criteria;
+        }
+        if (criteriaEvaluations.length > 0) {
+            validatedData.criteriaEvaluations = criteriaEvaluations;
+        }
+        if (possibleOutcomes.length > 0) {
+            validatedData.possibleOutcomes = possibleOutcomes;
+        }
+        if (informationGaps.length > 0) {
+            validatedData.informationGaps = informationGaps;
+        }
+        if (Object.keys(expectedValues).length > 0) {
+            validatedData.expectedValues = expectedValues;
+        }
+        if (Object.keys(multiCriteriaScores).length > 0) {
+            validatedData.multiCriteriaScores = multiCriteriaScores;
+        }
+        if (sensitivityInsights.length > 0) {
+            validatedData.sensitivityInsights = sensitivityInsights;
+        }
+        if (typeof data.recommendation === 'string') {
+            validatedData.recommendation = data.recommendation;
+        }
+        return validatedData;
     }
     updateRegistries(data) {
         // Initialize registries if needed
@@ -448,10 +472,10 @@ class DecisionFrameworkServer {
         if (data.nextStageNeeded) {
             output += `${chalk.blue('SUGGESTED NEXT STAGE:')}\n`;
             if (data.suggestedNextStage) {
-                output += `  � Move to ${data.suggestedNextStage} stage\n`;
+                output += `   Move to ${data.suggestedNextStage} stage\n`;
             }
             else {
-                output += `  � Continue with the current stage\n`;
+                output += `   Continue with the current stage\n`;
             }
         }
         return output;

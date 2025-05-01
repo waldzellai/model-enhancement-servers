@@ -1,9 +1,25 @@
 {
-  "name": "@cognitive-enhancement-mcp/collaborative-reasoning",
+  "name": "@waldzellai/collaborative-reasoning",
   "version": "0.1.0",
   "description": "MCP server for diagrammatic thinking and spatial representation",
   "license": "MIT",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/peragus-dev/model-enhancement-servers.git",
+    "directory": "src/collaborative-reasoning"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://github.com/peragus-dev/model-enhancement-servers/tree/main/src/collaborative-reasoning",
+  "author": "glassBead",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "thinking",
+    "model-enhancement"
+  ],
   "bin": {
     "mcp-server-collaborative-reasoning": "dist/index.js"
   },

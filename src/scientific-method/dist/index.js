@@ -64,18 +64,36 @@ class ScientificMethodServer {
                 throw new Error(`Invalid stage: ${data.stage}`);
         }
         // Create validated data object
-        return {
+        const validatedData = {
             stage: data.stage,
             inquiryId: data.inquiryId,
             iteration: data.iteration,
-            nextStageNeeded: data.nextStageNeeded,
-            observation: typeof data.observation === 'string' ? data.observation : undefined,
-            question: typeof data.question === 'string' ? data.question : undefined,
-            hypothesis: data.hypothesis,
-            experiment: data.experiment,
-            analysis: typeof data.analysis === 'string' ? data.analysis : undefined,
-            conclusion: typeof data.conclusion === 'string' ? data.conclusion : undefined
+            nextStageNeeded: typeof data.nextStageNeeded === 'boolean' ? data.nextStageNeeded : true, // Default to true if missing/invalid
         };
+        // NOTE: exactOptionalPropertyTypes is enabled in tsconfig.json.
+        // This means we cannot explicitly assign 'undefined' to optional properties.
+        // Instead, we create a base object with required properties and only add
+        // optional properties if they have a valid value.
+        if (typeof data.observation === 'string') {
+            validatedData.observation = data.observation;
+        }
+        if (typeof data.question === 'string') {
+            validatedData.question = data.question;
+        }
+        // Assuming hypothesis/experiment are validated elsewhere or structure is checked before assignment
+        if (data.hypothesis && typeof data.hypothesis === 'object') {
+            validatedData.hypothesis = data.hypothesis; // Consider deeper validation if needed
+        }
+        if (data.experiment && typeof data.experiment === 'object') {
+            validatedData.experiment = data.experiment; // Consider deeper validation if needed
+        }
+        if (typeof data.analysis === 'string') {
+            validatedData.analysis = data.analysis;
+        }
+        if (typeof data.conclusion === 'string') {
+            validatedData.conclusion = data.conclusion;
+        }
+        return validatedData;
     }
     validateHypothesisData(data) {
         // Validate required fields
@@ -112,11 +130,16 @@ class ScientificMethodServer {
             if (!variable.type || typeof variable.type !== 'string') {
                 throw new Error('Invalid variable type: must be a string');
             }
-            variables.push({
+            const baseVariable = {
                 name: variable.name,
-                type: variable.type,
-                operationalization: typeof variable.operationalization === 'string' ? variable.operationalization : undefined
-            });
+                type: variable.type
+            };
+            // NOTE: exactOptionalPropertyTypes is enabled (see explanation in validateScientificInquiryData).
+            // Conditionally add optional property
+            if (typeof variable.operationalization === 'string') {
+                baseVariable.operationalization = variable.operationalization;
+            }
+            variables.push(baseVariable);
         }
         // Validate assumptions
         const assumptions = [];
@@ -138,8 +161,7 @@ class ScientificMethodServer {
                 alternativeTo = undefined;
             }
         }
-        // Create validated hypothesis data
-        return {
+        const validatedHypothesisData = {
             statement: data.statement,
             variables,
             assumptions,
@@ -148,9 +170,16 @@ class ScientificMethodServer {
             domain: data.domain,
             iteration: data.iteration,
             status: data.status,
-            alternativeTo,
-            refinementOf: typeof data.refinementOf === 'string' ? data.refinementOf : undefined
         };
+        // NOTE: exactOptionalPropertyTypes is enabled (see explanation in validateScientificInquiryData).
+        // Conditionally add optional properties
+        if (alternativeTo) { // alternativeTo is already validated and set to undefined if invalid/empty
+            validatedHypothesisData.alternativeTo = alternativeTo;
+        }
+        if (typeof data.refinementOf === 'string') {
+            validatedHypothesisData.refinementOf = data.refinementOf;
+        }
+        return validatedHypothesisData;
     }
     validateExperimentData(data) {
         // Validate required fields
@@ -181,11 +210,16 @@ class ScientificMethodServer {
             if (!prediction.then || typeof prediction.then !== 'string') {
                 throw new Error('Invalid prediction then: must be a string');
             }
-            predictions.push({
+            const basePrediction = {
                 if: prediction.if,
                 then: prediction.then,
-                else: typeof prediction.else === 'string' ? prediction.else : undefined
-            });
+            };
+            // NOTE: exactOptionalPropertyTypes is enabled (see explanation in validateScientificInquiryData).
+            // Conditionally add optional property
+            if (typeof prediction.else === 'string') {
+                basePrediction.else = prediction.else;
+            }
+            predictions.push(basePrediction);
         }
         // Validate control measures
         const controlMeasures = [];
@@ -232,19 +266,32 @@ class ScientificMethodServer {
             }
         }
         // Create validated experiment data
-        return {
+        const validatedExperimentData = {
             design: data.design,
             methodology: data.methodology,
             predictions,
             experimentId: data.experimentId,
             hypothesisId: data.hypothesisId,
             controlMeasures,
-            results: typeof data.results === 'string' ? data.results : undefined,
-            outcomeMatched: typeof data.outcomeMatched === 'boolean' ? data.outcomeMatched : undefined,
-            unexpectedObservations,
-            limitations,
-            nextSteps
         };
+        // NOTE: exactOptionalPropertyTypes is enabled (see explanation in validateScientificInquiryData).
+        // Conditionally add optional properties
+        if (typeof data.results === 'string') {
+            validatedExperimentData.results = data.results;
+        }
+        if (typeof data.outcomeMatched === 'boolean') {
+            validatedExperimentData.outcomeMatched = data.outcomeMatched;
+        }
+        if (unexpectedObservations) { // Already validated and set to undefined if invalid/empty
+            validatedExperimentData.unexpectedObservations = unexpectedObservations;
+        }
+        if (limitations) { // Already validated and set to undefined if invalid/empty
+            validatedExperimentData.limitations = limitations;
+        }
+        if (nextSteps) { // Already validated and set to undefined if invalid/empty
+            validatedExperimentData.nextSteps = nextSteps;
+        }
+        return validatedExperimentData;
     }
     updateRegistries(data) {
         // Update hypothesis registry if a hypothesis is provided
@@ -471,7 +518,7 @@ class ScientificMethodServer {
                 default: nextStage = 'observation';
             }
             output += `${chalk.blue('NEXT STAGE:')}\n`;
-            output += `  � Move to ${nextStage} stage\n`;
+            output += `  - Move to ${nextStage} stage\n`;
         }
         return output;
     }

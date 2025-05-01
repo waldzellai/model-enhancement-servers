@@ -1,9 +1,25 @@
 {
-  "name": "@cognitive-enhancement-mcp/visual-reasoning",
+  "name": "@waldzellai/visual-reasoning",
   "version": "0.1.0",
   "description": "MCP server for diagrammatic thinking and spatial representation",
   "license": "MIT",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/peragus-dev/model-enhancement-servers.git",
+    "directory": "src/visual-reasoning"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://github.com/peragus-dev/model-enhancement-servers/tree/main/src/visual-reasoning",
+  "author": "glassBead",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "thinking",
+    "model-enhancement"
+  ],
   "bin": {
     "mcp-server-visual-reasoning": "dist/index.js"
   },

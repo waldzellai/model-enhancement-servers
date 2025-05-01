@@ -115,13 +115,16 @@ class CollaborativeReasoningServer {
                     }
                 }
             }
-            contributions.push({
+            const contributionData = {
                 personaId: contribution.personaId,
                 content: contribution.content,
                 type: contribution.type,
                 confidence: contribution.confidence,
-                referenceIds: referenceIds.length > 0 ? referenceIds : undefined
-            });
+            };
+            if (referenceIds.length > 0) {
+                contributionData.referenceIds = referenceIds;
+            }
+            contributions.push(contributionData);
         }
         // Validate disagreements
         const disagreements = [];
@@ -157,24 +160,28 @@ class CollaborativeReasoningServer {
                     });
                 }
                 let resolution = undefined;
-                if (disagreement.resolution && typeof disagreement.resolution === 'object') {
-                    const res = disagreement.resolution;
-                    if (!res.type || typeof res.type !== 'string') {
-                        throw new Error('Invalid resolution type: must be a string');
-                    }
-                    if (!res.description || typeof res.description !== 'string') {
-                        throw new Error('Invalid resolution description: must be a string');
-                    }
+                // Explicit, detailed type guard for disagreement.resolution
+                if (disagreement.resolution &&
+                    typeof disagreement.resolution === 'object' &&
+                    'type' in disagreement.resolution &&
+                    typeof disagreement.resolution.type === 'string' &&
+                    ['consensus', 'compromise', 'integration', 'tabled'].includes(disagreement.resolution.type) &&
+                    'description' in disagreement.resolution &&
+                    typeof disagreement.resolution.description === 'string') {
+                    // Now TS knows the exact shape, inner checks are redundant
                     resolution = {
-                        type: res.type,
-                        description: res.description
+                        type: disagreement.resolution.type,
+                        description: disagreement.resolution.description
                     };
                 }
-                disagreements.push({
+                const disagreementData = {
                     topic: disagreement.topic,
                     positions,
-                    resolution
-                });
+                };
+                if (resolution) {
+                    disagreementData.resolution = resolution;
+                }
+                disagreements.push(disagreementData);
             }
         }
         // Validate optional array fields
@@ -211,23 +218,39 @@ class CollaborativeReasoningServer {
             }
         }
         // Create validated data object
-        return {
+        const validatedData = {
             topic: data.topic,
             personas,
             contributions,
-            disagreements: disagreements.length > 0 ? disagreements : undefined,
             stage: data.stage,
             activePersonaId: data.activePersonaId,
-            nextPersonaId: typeof data.nextPersonaId === 'string' ? data.nextPersonaId : undefined,
-            keyInsights: keyInsights.length > 0 ? keyInsights : undefined,
-            consensusPoints: consensusPoints.length > 0 ? consensusPoints : undefined,
-            openQuestions: openQuestions.length > 0 ? openQuestions : undefined,
-            finalRecommendation: typeof data.finalRecommendation === 'string' ? data.finalRecommendation : undefined,
             sessionId: data.sessionId,
             iteration: data.iteration,
             nextContributionNeeded: data.nextContributionNeeded,
-            suggestedContributionTypes: suggestedContributionTypes.length > 0 ? suggestedContributionTypes : undefined
         };
+        // Conditionally add optional properties
+        if (disagreements.length > 0) {
+            validatedData.disagreements = disagreements;
+        }
+        if (typeof data.nextPersonaId === 'string') {
+            validatedData.nextPersonaId = data.nextPersonaId;
+        }
+        if (keyInsights.length > 0) {
+            validatedData.keyInsights = keyInsights;
+        }
+        if (consensusPoints.length > 0) {
+            validatedData.consensusPoints = consensusPoints;
+        }
+        if (openQuestions.length > 0) {
+            validatedData.openQuestions = openQuestions;
+        }
+        if (data.finalRecommendation && typeof data.finalRecommendation === 'string') {
+            validatedData.finalRecommendation = data.finalRecommendation;
+        }
+        if (suggestedContributionTypes.length > 0) {
+            validatedData.suggestedContributionTypes = suggestedContributionTypes;
+        }
+        return validatedData;
     }
     updateRegistries(data) {
         const sessionId = data.sessionId;
@@ -269,13 +292,13 @@ class CollaborativeReasoningServer {
         }
     }
     updateSessionHistory(data) {
-        // Initialize session history if needed
-        if (!this.sessionHistory[data.sessionId]) {
-            this.sessionHistory[data.sessionId] = [];
+        let historyEntry = this.sessionHistory[data.sessionId]; // Get potential entry
+        if (!historyEntry) { // Check if it exists
+            historyEntry = []; // Create new array if not
+            this.sessionHistory[data.sessionId] = historyEntry; // Assign it back to the object
         }
-        // Add to session history
-        this.sessionHistory[data.sessionId].push(data);
-        // Update registries
+        // Now, historyEntry is guaranteed to be CollaborativeReasoningData[]
+        historyEntry.push(data);
         this.updateRegistries(data);
     }
     selectNextPersona(data) {
@@ -284,9 +307,14 @@ class CollaborativeReasoningServer {
             return data.nextPersonaId;
         }
         // Otherwise, select the next persona in rotation
+        if (!data.personas || data.personas.length === 0) {
+            throw new Error("Cannot determine next persona: No personas defined in session.");
+        }
         const personaIds = data.personas.map(p => p.id);
         const currentIndex = personaIds.indexOf(data.activePersonaId);
-        const nextIndex = (currentIndex + 1) % personaIds.length;
+        // If active persona not found (shouldn't happen ideally), default to first
+        const nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % personaIds.length;
+        // personaIds[nextIndex] is guaranteed to be string due to empty check above
         return personaIds[nextIndex];
     }
     getPersonaColor(index) {
@@ -298,6 +326,7 @@ class CollaborativeReasoningServer {
             chalk.cyan,
             chalk.red
         ];
+        // Use non-null assertion as logic guarantees a valid index
         return colors[index % colors.length];
     }
     getContributionTypeColor(type) {
@@ -343,12 +372,12 @@ class CollaborativeReasoningServer {
         for (let i = 0; i < data.personas.length; i++) {
             const persona = data.personas[i];
             const color = this.getPersonaColor(i);
-            output += `${color(`${persona.name} (${persona.id})`)}\n`;
-            output += `  Expertise: ${persona.expertise.join(', ')}\n`;
-            output += `  Perspective: ${persona.perspective}\n`;
-            output += `  Communication: ${persona.communication.style} (${persona.communication.tone})\n`;
+            output += `${color(`${persona?.name} (${persona?.id})`)}\n`;
+            output += `  Expertise: ${persona?.expertise.join(', ')}\n`;
+            output += `  Perspective: ${persona?.perspective}\n`;
+            output += `  Communication: ${persona?.communication.style} (${persona?.communication.tone})\n`;
             // Highlight active persona
-            if (persona.id === data.activePersonaId) {
+            if (persona?.id === data.activePersonaId) {
                 output += `  ${chalk.bgGreen(chalk.black(' ACTIVE '))}\n`;
             }
             output += '\n';

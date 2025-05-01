@@ -27,23 +27,41 @@ class ArgumentationServer {
         if (typeof data.nextArgumentNeeded !== 'boolean') {
             throw new Error('Invalid nextArgumentNeeded: must be a boolean');
         }
-        return {
+        // Base object with required properties
+        const validatedData = {
             claim: data.claim,
             premises: data.premises,
             conclusion: data.conclusion,
             argumentId: data.argumentId || `arg-${this.nextArgumentId++}`,
             argumentType: data.argumentType,
             confidence: data.confidence,
-            respondsTo: data.respondsTo,
-            supports: Array.isArray(data.supports) ? data.supports : undefined,
-            contradicts: Array.isArray(data.contradicts) ? data.contradicts : undefined,
-            strengths: Array.isArray(data.strengths) ? data.strengths : undefined,
-            weaknesses: Array.isArray(data.weaknesses) ? data.weaknesses : undefined,
-            nextArgumentNeeded: data.nextArgumentNeeded,
-            suggestedNextTypes: Array.isArray(data.suggestedNextTypes)
-                ? data.suggestedNextTypes
-                : undefined,
+            nextArgumentNeeded: typeof data.nextArgumentNeeded === 'boolean' ? data.nextArgumentNeeded : true
         };
+        // NOTE: exactOptionalPropertyTypes is enabled in tsconfig.json.
+        // This means we cannot explicitly assign 'undefined' to optional properties.
+        // Instead, we create a base object with required properties and only add
+        // optional properties if they have a valid value.
+        // Conditionally add optional properties
+        if (data.respondsTo && typeof data.respondsTo === 'string') {
+            validatedData.respondsTo = data.respondsTo;
+        }
+        if (Array.isArray(data.supports) && data.supports.length > 0) {
+            validatedData.supports = data.supports;
+        }
+        if (Array.isArray(data.contradicts) && data.contradicts.length > 0) {
+            validatedData.contradicts = data.contradicts;
+        }
+        if (Array.isArray(data.strengths) && data.strengths.length > 0) {
+            validatedData.strengths = data.strengths;
+        }
+        if (Array.isArray(data.weaknesses) && data.weaknesses.length > 0) {
+            validatedData.weaknesses = data.weaknesses;
+        }
+        // Add check for suggestedNextTypes based on original build error
+        if (Array.isArray(data.suggestedNextTypes) && data.suggestedNextTypes.length > 0) {
+            validatedData.suggestedNextTypes = data.suggestedNextTypes;
+        }
+        return validatedData; // Cast back to full type
     }
     formatArgument(argument) {
         const { argumentId, argumentType, claim, premises, conclusion, confidence, strengths, weaknesses } = argument;

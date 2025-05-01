@@ -3,6 +3,9 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListToolsRequestSchema, } from "@modelcontextprotocol/sdk/types.js";
 import chalk from 'chalk';
+function isTransformationType(value) {
+    return typeof value === 'string' && ['rotate', 'move', 'resize', 'recolor', 'regroup'].includes(value);
+}
 class VisualReasoningServer {
     visualStateHistory = {};
     currentVisualState = {};
@@ -44,22 +47,32 @@ class VisualReasoningServer {
                 validatedElements.push(element);
             }
         }
-        // Build the validated object conditionally
+        // Base object with non-optional properties
         const validatedData = {
             operation: data.operation,
-            // elements added conditionally below
-            transformationType: data.transformationType,
             diagramId: data.diagramId,
             diagramType: data.diagramType,
             iteration: data.iteration,
-            observation: data.observation,
-            insight: data.insight,
-            nextOperationNeeded: data.nextOperationNeeded
+            nextOperationNeeded: typeof data.nextOperationNeeded === 'boolean' ? data.nextOperationNeeded : true
         };
+        // NOTE: exactOptionalPropertyTypes is enabled in tsconfig.json.
+        // This means we cannot explicitly assign 'undefined' to optional properties.
+        // Instead, we create a base object with required properties and only add
+        // optional properties if they have a valid value.
+        // Conditionally add optional properties
+        if (isTransformationType(data.transformationType)) {
+            validatedData.transformationType = data.transformationType;
+        }
+        if (data.observation) {
+            validatedData.observation = data.observation;
+        }
+        if (data.insight) {
+            validatedData.insight = data.insight;
+        }
         if (validatedElements.length > 0) {
             validatedData.elements = validatedElements;
         }
-        return validatedData;
+        return validatedData; // Cast back to full type for return
     }
     updateVisualState(operation) {
         const { diagramId, elements, operation: operationType } = operation;

@@ -1,9 +1,25 @@
 {
-  "name": "@cognitive-enhancement-mcp/scientific-method",
+  "name": "@waldzellai/scientific-method",
   "version": "0.1.0",
   "description": "MCP server for diagrammatic thinking and spatial representation",
   "license": "MIT",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/peragus-dev/model-enhancement-servers.git",
+    "directory": "src/scientific-method"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://github.com/peragus-dev/model-enhancement-servers/tree/main/src/scientific-method",
+  "author": "glassBead",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "thinking",
+    "model-enhancement"
+  ],
   "bin": {
     "mcp-server-scientific-method": "dist/index.js"
   },
