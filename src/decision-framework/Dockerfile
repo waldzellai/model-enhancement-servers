@@ -1,19 +1,22 @@
 FROM node:20-alpine AS build
 
-# Create app directory
 WORKDIR /app
 
-# Copy package files
-COPY package.json ./
-COPY tsconfig.json ./
+# Copy root package.json for workspace context during install
+COPY package.json ./ 
+
+# Copy server-specific files needed for install/build
 COPY src/decision-framework/package.json ./src/decision-framework/
 COPY src/decision-framework/tsconfig.json ./src/decision-framework/
 COPY src/decision-framework/*.ts ./src/decision-framework/
 
-# Install dependencies
+# Install dependencies (needs root package.json)
 RUN npm install
 
-# Build the server
+# Copy root tsconfig.json *just before* build command needs it
+COPY tsconfig.json ./ 
+
+# Build the server (needs root tsconfig.json)
 RUN npm run build --workspace=@waldzellai/decision-framework
 
 FROM node:20-alpine AS runtime
