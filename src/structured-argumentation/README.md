@@ -151,7 +151,7 @@ Add this to your `claude_desktop_config.json`:
       "command": "npx",
       "args": [
         "-y",
-        "@cognitive-enhancement-mcp/structured-argumentation"
+        "@waldzellai/structured-argumentation"
       ]
     }
   }
@@ -169,7 +169,7 @@ Add this to your `claude_desktop_config.json`:
         "run",
         "--rm",
         "-i",
-        "cognitive-enhancement-mcp/structured-argumentation"
+        "waldzellai/structured-argumentation"
       ]
     }
   }

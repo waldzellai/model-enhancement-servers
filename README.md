@@ -20,10 +20,10 @@ Each server can be installed individually:
 
 ```bash
 # Using npm
-npm install @cognitive-enhancement-mcp/structured-argumentation
+npm install @waldzellai/structured-argumentation
 
 # Using yarn
-yarn add @cognitive-enhancement-mcp/structured-argumentation
+yarn add @waldzellai/structured-argumentation
 ```
 
 ## Usage with Claude Desktop
@@ -37,7 +37,7 @@ Add this to your `claude_desktop_config.json`:
       "command": "npx",
       "args": [
         "-y",
-        "@cognitive-enhancement-mcp/structured-argumentation"
+        "@waldzellai/structured-argumentation"
       ]
     }
   }
@@ -49,7 +49,7 @@ Add this to your `claude_desktop_config.json`:
 All servers are available as Docker images:
 
 ```bash
-docker run --rm -i cognitive-enhancement-mcp/structured-argumentation
+docker run --rm -i waldzellai/structured-argumentation
 ```
 
 ## Development
