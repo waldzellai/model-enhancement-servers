@@ -1,3 +1,7 @@
+
+build:
+  dockerBuildPath: ../../
+  dockerfile: src/structured-argumentation/Dockerfile
 startCommand:
   type: stdio
   configSchema:

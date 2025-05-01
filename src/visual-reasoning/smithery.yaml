@@ -1,3 +1,6 @@
+build:
+  dockerBuildPath: ../../
+  dockerfile: src/visual-reasoning/Dockerfile
 startCommand:
   type: stdio
   configSchema:
