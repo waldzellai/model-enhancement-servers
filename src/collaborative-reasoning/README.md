@@ -1,4 +1,5 @@
 # Collaborative Reasoning MCP Server
+[![smithery badge](https://smithery.ai/badge/@waldzellai/collaborative-reasoning)](https://smithery.ai/server/@waldzellai/collaborative-reasoning)
 
 ## Motivation
 
