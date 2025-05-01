@@ -782,7 +782,7 @@ Key features:
 };
 const server = new Server({
     name: "scientific-method-server",
-    version: "0.1.0",
+    version: "0.1.2",
 }, {
     capabilities: {
         tools: {},
