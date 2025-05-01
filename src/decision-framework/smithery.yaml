@@ -1,3 +1,6 @@
+build:
+  dockerBuildPath: ../../
+  dockerfile: src/decision-framework/Dockerfile
 startCommand:
   type: stdio
   configSchema:
