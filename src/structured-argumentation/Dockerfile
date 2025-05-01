@@ -1,19 +1,22 @@
 FROM node:20-alpine AS build
 
-# Create app directory
 WORKDIR /app
 
-# Copy package files
-COPY package.json ./
-COPY tsconfig.json ./
+# Copy root package.json for workspace context during install
+COPY package.json ./ 
+
+# Copy server-specific files needed for install/build
 COPY src/structured-argumentation/package.json ./src/structured-argumentation/
 COPY src/structured-argumentation/tsconfig.json ./src/structured-argumentation/
 COPY src/structured-argumentation/*.ts ./src/structured-argumentation/
 
-# Install dependencies
+# Install dependencies (needs root package.json)
 RUN npm install
 
-# Build the server
+# Copy root tsconfig.json *just before* build command needs it
+COPY tsconfig.json ./ 
+
+# Build the server (needs root tsconfig.json)
 RUN npm run build --workspace=@waldzellai/structured-argumentation
 
 FROM node:20-alpine AS runtime
