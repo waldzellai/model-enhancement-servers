@@ -6,6 +6,7 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
   Tool,
+  CallToolRequest
 } from "@modelcontextprotocol/sdk/types.js";
 import chalk from 'chalk';
 
@@ -55,6 +56,14 @@ interface AnalogicalReasoningData {
   // Next steps
   nextOperationNeeded: boolean;
   suggestedOperations?: Array<"add-mapping" | "revise-mapping" | "draw-inference" | "evaluate-limitation" | "try-new-source">;
+}
+
+// Type guard for DomainElement type
+const allowedElementTypes = ["entity", "attribute", "relation", "process"] as const;
+type DomainElementType = typeof allowedElementTypes[number];
+
+function isValidElementType(type: unknown): type is DomainElementType {
+  return typeof type === 'string' && allowedElementTypes.includes(type as DomainElementType);
 }
 
 class AnalogicalReasoningServer {
@@ -132,11 +141,15 @@ class AnalogicalReasoningServer {
         throw new Error(`Invalid element type for element ${element.id}: must be a string`);
       }
       
+      if (!isValidElementType(element.type)) {
+        throw new Error(`Invalid element type for element ${element.id}: must be one of ${allowedElementTypes.join(', ')}`);
+      }
+      
       if (!element.description || typeof element.description !== 'string') {
         throw new Error(`Invalid element description for element ${element.id}: must be a string`);
       }
       
-      sourceElements.push(element as DomainElement);
+      sourceElements.push({ id: element.id as string, name: element.name as string, type: element.type, description: element.description as string });
     }
     
     const targetElements: DomainElement[] = [];
@@ -153,11 +166,15 @@ class AnalogicalReasoningServer {
         throw new Error(`Invalid element type for element ${element.id}: must be a string`);
       }
       
+      if (!isValidElementType(element.type)) {
+        throw new Error(`Invalid element type for element ${element.id}: must be one of ${allowedElementTypes.join(', ')}`);
+      }
+      
       if (!element.description || typeof element.description !== 'string') {
         throw new Error(`Invalid element description for element ${element.id}: must be a string`);
       }
       
-      targetElements.push(element as DomainElement);
+      targetElements.push({ id: element.id as string, name: element.name as string, type: element.type, description: element.description as string });
     }
     
     // Validate mappings
@@ -189,13 +206,17 @@ class AnalogicalReasoningServer {
           }
         }
         
-        mappings.push({
+        const mappingData: AnalogicalMapping = {
           sourceElement: mapping.sourceElement as string,
           targetElement: mapping.targetElement as string,
           mappingStrength: mapping.mappingStrength as number,
           justification: mapping.justification as string,
-          limitations: limitations.length > 0 ? limitations : undefined
-        });
+          // limitations is added conditionally below
+        };
+        if (limitations.length > 0) {
+            mappingData.limitations = limitations;
+        }
+        mappings.push(mappingData);
       }
     }
     
@@ -259,8 +280,8 @@ class AnalogicalReasoningServer {
       }
     }
     
-    // Create validated data object
-    return {
+    // Create validated data object with conditional suggestedOperations
+    const validatedData: AnalogicalReasoningData = {
       sourceDomain: {
         name: sourceDomain.name as string,
         elements: sourceElements
@@ -278,8 +299,14 @@ class AnalogicalReasoningServer {
       limitations,
       inferences,
       nextOperationNeeded: data.nextOperationNeeded as boolean,
-      suggestedOperations: suggestedOperations.length > 0 ? suggestedOperations : undefined
+      // suggestedOperations is added conditionally below
     };
+
+    if (suggestedOperations.length > 0) {
+      validatedData.suggestedOperations = suggestedOperations;
+    }
+
+    return validatedData;
   }
 
   private updateDomainRegistry(domain: { name: string; elements: DomainElement[] }): void {
@@ -290,13 +317,13 @@ class AnalogicalReasoningServer {
   }
 
   private updateAnalogicalReasoning(data: AnalogicalReasoningData): void {
-    // Initialize analogy history if needed
-    if (!this.analogyHistory[data.analogyId]) {
-      this.analogyHistory[data.analogyId] = [];
+    let historyEntry = this.analogyHistory[data.analogyId]; // Get potential entry
+    if (!historyEntry) { // Check if it exists
+      historyEntry = []; // Create new array if not
+      this.analogyHistory[data.analogyId] = historyEntry; // Assign it back to the object
     }
-    
-    // Add to analogy history
-    this.analogyHistory[data.analogyId].push(data);
+    // Now, historyEntry is guaranteed to be AnalogicalReasoningData[]
+    historyEntry.push(data);
     
     // Update domain registry
     this.updateDomainRegistry(data.sourceDomain);
@@ -306,7 +333,7 @@ class AnalogicalReasoningServer {
   private visualizeMapping(data: AnalogicalReasoningData): string {
     const { sourceDomain, targetDomain, mappings } = data;
     
-    let output = `\n${chalk.bold(`ANALOGY: ${sourceDomain.name} ” ${targetDomain.name}`)} (ID: ${data.analogyId})\n\n`;
+    let output = `\n${chalk.bold(`ANALOGY: ${sourceDomain.name} Â” ${targetDomain.name}`)} (ID: ${data.analogyId})\n\n`;
     
     // Purpose and confidence
     output += `${chalk.cyan('Purpose:')} ${data.purpose}\n`;
@@ -417,10 +444,10 @@ class AnalogicalReasoningServer {
       const operations = data.suggestedOperations || [];
       if (operations.length > 0) {
         for (const operation of operations) {
-          output += `  ’ ${operation}\n`;
+          output += `  Â’ ${operation}\n`;
         }
       } else {
-        output += `  ’ Continue refining the analogy\n`;
+        output += `  Â’ Continue refining the analogy\n`;
       }
     }
     
@@ -700,7 +727,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
   tools: [ANALOGICAL_REASONING_TOOL],
 }));
 
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
+server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest) => {
   if (request.params.name === "analogicalReasoning") {
     return analogicalReasoningServer.processAnalogicalReasoning(request.params.arguments);
   }

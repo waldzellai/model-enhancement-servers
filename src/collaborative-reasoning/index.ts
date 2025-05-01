@@ -211,13 +211,16 @@ class CollaborativeReasoningServer {
         }
       }
       
-      contributions.push({
+      const contributionData: Contribution = {
         personaId: contribution.personaId as string,
         content: contribution.content as string,
         type: contribution.type as Contribution['type'],
         confidence: contribution.confidence as number,
-        referenceIds: referenceIds.length > 0 ? referenceIds : undefined
-      });
+      };
+      if (referenceIds.length > 0) {
+        contributionData.referenceIds = referenceIds;
+      }
+      contributions.push(contributionData);
     }
     
     // Validate disagreements
@@ -260,29 +263,31 @@ class CollaborativeReasoningServer {
           });
         }
         
-        let resolution: Disagreement['resolution'] = undefined;
-        if (disagreement.resolution && typeof disagreement.resolution === 'object') {
-          const res = disagreement.resolution as Record<string, unknown>;
-          
-          if (!res.type || typeof res.type !== 'string') {
-            throw new Error('Invalid resolution type: must be a string');
-          }
-          
-          if (!res.description || typeof res.description !== 'string') {
-            throw new Error('Invalid resolution description: must be a string');
-          }
-          
+        let resolution: Disagreement['resolution'] | undefined = undefined;
+        // Explicit, detailed type guard for disagreement.resolution
+        if (disagreement.resolution && 
+            typeof disagreement.resolution === 'object' &&
+            'type' in disagreement.resolution && 
+            typeof disagreement.resolution.type === 'string' &&
+            ['consensus', 'compromise', 'integration', 'tabled'].includes(disagreement.resolution.type) &&
+            'description' in disagreement.resolution && 
+            typeof disagreement.resolution.description === 'string') 
+        {
+          // Now TS knows the exact shape, inner checks are redundant
           resolution = {
-            type: res.type as Disagreement['resolution']['type'],
-            description: res.description as string
+            type: disagreement.resolution!.type as NonNullable<Disagreement['resolution']>['type'],
+            description: disagreement.resolution!.description
           };
         }
         
-        disagreements.push({
+        const disagreementData: Disagreement = {
           topic: disagreement.topic as string,
           positions,
-          resolution
-        });
+        };
+        if (resolution) {
+          disagreementData.resolution = resolution;
+        }
+        disagreements.push(disagreementData);
       }
     }
     
@@ -324,23 +329,41 @@ class CollaborativeReasoningServer {
     }
     
     // Create validated data object
-    return {
+    const validatedData: CollaborativeReasoningData = {
       topic: data.topic as string,
       personas,
       contributions,
-      disagreements: disagreements.length > 0 ? disagreements : undefined,
       stage: data.stage as CollaborativeReasoningData['stage'],
       activePersonaId: data.activePersonaId as string,
-      nextPersonaId: typeof data.nextPersonaId === 'string' ? data.nextPersonaId : undefined,
-      keyInsights: keyInsights.length > 0 ? keyInsights : undefined,
-      consensusPoints: consensusPoints.length > 0 ? consensusPoints : undefined,
-      openQuestions: openQuestions.length > 0 ? openQuestions : undefined,
-      finalRecommendation: typeof data.finalRecommendation === 'string' ? data.finalRecommendation : undefined,
       sessionId: data.sessionId as string,
       iteration: data.iteration as number,
       nextContributionNeeded: data.nextContributionNeeded as boolean,
-      suggestedContributionTypes: suggestedContributionTypes.length > 0 ? suggestedContributionTypes as any : undefined
     };
+    
+    // Conditionally add optional properties
+    if (disagreements.length > 0) {
+      validatedData.disagreements = disagreements;
+    }
+    if (typeof data.nextPersonaId === 'string') {
+      validatedData.nextPersonaId = data.nextPersonaId;
+    }
+    if (keyInsights.length > 0) {
+      validatedData.keyInsights = keyInsights;
+    }
+    if (consensusPoints.length > 0) {
+      validatedData.consensusPoints = consensusPoints;
+    }
+    if (openQuestions.length > 0) {
+      validatedData.openQuestions = openQuestions;
+    }
+    if (data.finalRecommendation && typeof data.finalRecommendation === 'string') {
+      validatedData.finalRecommendation = data.finalRecommendation;
+    }
+    if (suggestedContributionTypes.length > 0) {
+      validatedData.suggestedContributionTypes = suggestedContributionTypes;
+    }
+    
+    return validatedData;
   }
 
   private updateRegistries(data: CollaborativeReasoningData): void {
@@ -395,15 +418,14 @@ class CollaborativeReasoningServer {
   }
 
   private updateSessionHistory(data: CollaborativeReasoningData): void {
-    // Initialize session history if needed
-    if (!this.sessionHistory[data.sessionId]) {
-      this.sessionHistory[data.sessionId] = [];
+    let historyEntry = this.sessionHistory[data.sessionId]; // Get potential entry
+    if (!historyEntry) { // Check if it exists
+      historyEntry = []; // Create new array if not
+      this.sessionHistory[data.sessionId] = historyEntry; // Assign it back to the object
     }
+    // Now, historyEntry is guaranteed to be CollaborativeReasoningData[]
+    historyEntry.push(data);
     
-    // Add to session history
-    this.sessionHistory[data.sessionId].push(data);
-    
-    // Update registries
     this.updateRegistries(data);
   }
 
@@ -414,11 +436,17 @@ class CollaborativeReasoningServer {
     }
     
     // Otherwise, select the next persona in rotation
-    const personaIds = data.personas.map(p => p.id);
-    const currentIndex = personaIds.indexOf(data.activePersonaId);
-    const nextIndex = (currentIndex + 1) % personaIds.length;
+    if (!data.personas || data.personas.length === 0) {
+      throw new Error("Cannot determine next persona: No personas defined in session.");
+    }
     
-    return personaIds[nextIndex];
+    const personaIds = data.personas.map(p => p.id);
+    const currentIndex = personaIds.indexOf(data.activePersonaId); 
+    // If active persona not found (shouldn't happen ideally), default to first
+    const nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % personaIds.length;
+    
+    // personaIds[nextIndex] is guaranteed to be string due to empty check above
+    return personaIds[nextIndex]!;
   }
 
   private getPersonaColor(index: number): (text: string) => string {
@@ -431,7 +459,8 @@ class CollaborativeReasoningServer {
       chalk.red
     ];
     
-    return colors[index % colors.length];
+    // Use non-null assertion as logic guarantees a valid index
+    return colors[index % colors.length]!;
   }
 
   private getContributionTypeColor(type: string): (text: string) => string {
@@ -484,13 +513,13 @@ class CollaborativeReasoningServer {
       const persona = data.personas[i];
       const color = this.getPersonaColor(i);
       
-      output += `${color(`${persona.name} (${persona.id})`)}\n`;
-      output += `  Expertise: ${persona.expertise.join(', ')}\n`;
-      output += `  Perspective: ${persona.perspective}\n`;
-      output += `  Communication: ${persona.communication.style} (${persona.communication.tone})\n`;
+      output += `${color(`${persona?.name} (${persona?.id})`)}\n`;
+      output += `  Expertise: ${persona?.expertise.join(', ')}\n`;
+      output += `  Perspective: ${persona?.perspective}\n`;
+      output += `  Communication: ${persona?.communication.style} (${persona?.communication.tone})\n`;
       
       // Highlight active persona
-      if (persona.id === data.activePersonaId) {
+      if (persona?.id === data.activePersonaId) {
         output += `  ${chalk.bgGreen(chalk.black(' ACTIVE '))}\n`;
       }
       

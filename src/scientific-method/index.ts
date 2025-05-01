@@ -158,18 +158,38 @@ class ScientificMethodServer {
     }
     
     // Create validated data object
-    return {
+    const validatedData: Omit<ScientificInquiryData, 'observation' | 'question' | 'hypothesis' | 'experiment' | 'analysis' | 'conclusion'> & Partial<Pick<ScientificInquiryData, 'observation' | 'question' | 'hypothesis' | 'experiment' | 'analysis' | 'conclusion'>> = {
       stage: data.stage as ScientificInquiryData['stage'],
       inquiryId: data.inquiryId as string,
       iteration: data.iteration as number,
-      nextStageNeeded: data.nextStageNeeded as boolean,
-      observation: typeof data.observation === 'string' ? data.observation : undefined,
-      question: typeof data.question === 'string' ? data.question : undefined,
-      hypothesis: data.hypothesis as HypothesisData,
-      experiment: data.experiment as ExperimentData,
-      analysis: typeof data.analysis === 'string' ? data.analysis : undefined,
-      conclusion: typeof data.conclusion === 'string' ? data.conclusion : undefined
+      nextStageNeeded: typeof data.nextStageNeeded === 'boolean' ? data.nextStageNeeded : true, // Default to true if missing/invalid
     };
+
+    // NOTE: exactOptionalPropertyTypes is enabled in tsconfig.json.
+    // This means we cannot explicitly assign 'undefined' to optional properties.
+    // Instead, we create a base object with required properties and only add
+    // optional properties if they have a valid value.
+    if (typeof data.observation === 'string') {
+      validatedData.observation = data.observation;
+    }
+    if (typeof data.question === 'string') {
+      validatedData.question = data.question;
+    }
+    // Assuming hypothesis/experiment are validated elsewhere or structure is checked before assignment
+    if (data.hypothesis && typeof data.hypothesis === 'object') {
+      validatedData.hypothesis = data.hypothesis as HypothesisData; // Consider deeper validation if needed
+    }
+    if (data.experiment && typeof data.experiment === 'object') {
+      validatedData.experiment = data.experiment as ExperimentData; // Consider deeper validation if needed
+    }
+    if (typeof data.analysis === 'string') {
+      validatedData.analysis = data.analysis;
+    }
+    if (typeof data.conclusion === 'string') {
+      validatedData.conclusion = data.conclusion;
+    }
+
+    return validatedData as ScientificInquiryData;
   }
 
   private validateHypothesisData(data: Record<string, unknown>): HypothesisData {
@@ -217,11 +237,18 @@ class ScientificMethodServer {
         throw new Error('Invalid variable type: must be a string');
       }
       
-      variables.push({
+      const baseVariable: Omit<Variable, 'operationalization'> & Partial<Pick<Variable, 'operationalization'>> = {
         name: variable.name as string,
-        type: variable.type as Variable['type'],
-        operationalization: typeof variable.operationalization === 'string' ? variable.operationalization : undefined
-      });
+        type: variable.type as Variable['type']
+      };
+
+      // NOTE: exactOptionalPropertyTypes is enabled (see explanation in validateScientificInquiryData).
+      // Conditionally add optional property
+      if (typeof variable.operationalization === 'string') {
+        baseVariable.operationalization = variable.operationalization;
+      }
+
+      variables.push(baseVariable as Variable);
     }
     
     // Validate assumptions
@@ -246,8 +273,7 @@ class ScientificMethodServer {
       }
     }
     
-    // Create validated hypothesis data
-    return {
+    const validatedHypothesisData: Omit<HypothesisData, 'alternativeTo' | 'refinementOf'> & Partial<Pick<HypothesisData, 'alternativeTo' | 'refinementOf'>> = {
       statement: data.statement as string,
       variables,
       assumptions,
@@ -256,9 +282,18 @@ class ScientificMethodServer {
       domain: data.domain as string,
       iteration: data.iteration as number,
       status: data.status as HypothesisData['status'],
-      alternativeTo,
-      refinementOf: typeof data.refinementOf === 'string' ? data.refinementOf : undefined
     };
+
+    // NOTE: exactOptionalPropertyTypes is enabled (see explanation in validateScientificInquiryData).
+    // Conditionally add optional properties
+    if (alternativeTo) { // alternativeTo is already validated and set to undefined if invalid/empty
+      validatedHypothesisData.alternativeTo = alternativeTo;
+    }
+    if (typeof data.refinementOf === 'string') {
+      validatedHypothesisData.refinementOf = data.refinementOf;
+    }
+
+    return validatedHypothesisData as HypothesisData;
   }
 
   private validateExperimentData(data: Record<string, unknown>): ExperimentData {
@@ -298,11 +333,18 @@ class ScientificMethodServer {
         throw new Error('Invalid prediction then: must be a string');
       }
       
-      predictions.push({
+      const basePrediction: Omit<Prediction, 'else'> & Partial<Pick<Prediction, 'else'>> = {
         if: prediction.if as string,
         then: prediction.then as string,
-        else: typeof prediction.else === 'string' ? prediction.else : undefined
-      });
+      };
+
+      // NOTE: exactOptionalPropertyTypes is enabled (see explanation in validateScientificInquiryData).
+      // Conditionally add optional property
+      if (typeof prediction.else === 'string') {
+        basePrediction.else = prediction.else;
+      }
+
+      predictions.push(basePrediction as Prediction);
     }
     
     // Validate control measures
@@ -354,19 +396,34 @@ class ScientificMethodServer {
     }
     
     // Create validated experiment data
-    return {
+    const validatedExperimentData: Omit<ExperimentData, 'results' | 'outcomeMatched' | 'unexpectedObservations' | 'limitations' | 'nextSteps'> & Partial<Pick<ExperimentData, 'results' | 'outcomeMatched' | 'unexpectedObservations' | 'limitations' | 'nextSteps'>> = {
       design: data.design as string,
       methodology: data.methodology as string,
       predictions,
       experimentId: data.experimentId as string,
       hypothesisId: data.hypothesisId as string,
       controlMeasures,
-      results: typeof data.results === 'string' ? data.results : undefined,
-      outcomeMatched: typeof data.outcomeMatched === 'boolean' ? data.outcomeMatched : undefined,
-      unexpectedObservations,
-      limitations,
-      nextSteps
     };
+
+    // NOTE: exactOptionalPropertyTypes is enabled (see explanation in validateScientificInquiryData).
+    // Conditionally add optional properties
+    if (typeof data.results === 'string') {
+      validatedExperimentData.results = data.results;
+    }
+    if (typeof data.outcomeMatched === 'boolean') {
+      validatedExperimentData.outcomeMatched = data.outcomeMatched;
+    }
+    if (unexpectedObservations) { // Already validated and set to undefined if invalid/empty
+      validatedExperimentData.unexpectedObservations = unexpectedObservations;
+    }
+    if (limitations) { // Already validated and set to undefined if invalid/empty
+      validatedExperimentData.limitations = limitations;
+    }
+    if (nextSteps) { // Already validated and set to undefined if invalid/empty
+      validatedExperimentData.nextSteps = nextSteps;
+    }
+
+    return validatedExperimentData as ExperimentData;
   }
 
   private updateRegistries(data: ScientificInquiryData): void {
@@ -620,7 +677,7 @@ class ScientificMethodServer {
       }
       
       output += `${chalk.blue('NEXT STAGE:')}\n`;
-      output += `  ’ Move to ${nextStage} stage\n`;
+      output += `  - Move to ${nextStage} stage\n`;
     }
     
     return output;

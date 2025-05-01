@@ -133,14 +133,25 @@ class MetacognitiveMonitoringServer {
         }
       }
       
-      knowledgeAssessment = {
-        domain: ka.domain as string,
-        knowledgeLevel: ka.knowledgeLevel as KnowledgeAssessment['knowledgeLevel'],
-        confidenceScore: ka.confidenceScore as number,
-        supportingEvidence: ka.supportingEvidence as string,
-        knownLimitations,
-        relevantTrainingCutoff: typeof ka.relevantTrainingCutoff === 'string' ? ka.relevantTrainingCutoff : undefined
-      };
+            // Base object with required properties
+            const baseAssessment: Omit<KnowledgeAssessment, 'relevantTrainingCutoff'> & Partial<Pick<KnowledgeAssessment, 'relevantTrainingCutoff'>> = {
+              domain: ka.domain as string,
+              knowledgeLevel: ka.knowledgeLevel as KnowledgeAssessment['knowledgeLevel'],
+              confidenceScore: ka.confidenceScore as number,
+              supportingEvidence: ka.supportingEvidence as string,
+              knownLimitations,
+            };
+      
+            // NOTE: exactOptionalPropertyTypes is enabled in tsconfig.json.
+            // This means we cannot explicitly assign 'undefined' to optional properties.
+            // Instead, we create a base object with required properties and only add
+            // optional properties if they have a valid value.
+            // Conditionally add optional property
+            if (typeof ka.relevantTrainingCutoff === 'string') {
+              baseAssessment.relevantTrainingCutoff = ka.relevantTrainingCutoff;
+            }
+      
+            knowledgeAssessment = baseAssessment as KnowledgeAssessment;
     }
     
     // Validate claims
@@ -172,14 +183,27 @@ class MetacognitiveMonitoringServer {
           }
         }
         
-        claims.push({
+        // Base object with required properties
+        const baseClaim: Omit<ClaimAssessment, 'alternativeInterpretations' | 'falsifiabilityCriteria'> & Partial<Pick<ClaimAssessment, 'alternativeInterpretations' | 'falsifiabilityCriteria'>> = {
           claim: claim.claim as string,
           status: claim.status as ClaimAssessment['status'],
           confidenceScore: claim.confidenceScore as number,
           evidenceBasis: claim.evidenceBasis as string,
-          alternativeInterpretations: alternativeInterpretations.length > 0 ? alternativeInterpretations : undefined,
-          falsifiabilityCriteria: typeof claim.falsifiabilityCriteria === 'string' ? claim.falsifiabilityCriteria : undefined
-        });
+        };
+        
+        // NOTE: exactOptionalPropertyTypes is enabled in tsconfig.json.
+        // This means we cannot explicitly assign 'undefined' to optional properties.
+        // Instead, we create a base object with required properties and only add
+        // optional properties if they have a valid value.
+        // Conditionally add optional properties
+        if (alternativeInterpretations.length > 0) {
+          baseClaim.alternativeInterpretations = alternativeInterpretations;
+        }
+        if (typeof claim.falsifiabilityCriteria === 'string') {
+          baseClaim.falsifiabilityCriteria = claim.falsifiabilityCriteria;
+        }
+        
+        claims.push(baseClaim as ClaimAssessment);
       }
     }
     
@@ -250,20 +274,36 @@ class MetacognitiveMonitoringServer {
     }
     
     // Create validated data object
-    return {
+    const validatedData: Omit<MetacognitiveMonitoringData, 'knowledgeAssessment' | 'claims' | 'reasoningSteps' | 'suggestedAssessments'> & Partial<Pick<MetacognitiveMonitoringData, 'knowledgeAssessment' | 'claims' | 'reasoningSteps' | 'suggestedAssessments'>> = {
       task: data.task as string,
       stage: data.stage as MetacognitiveMonitoringData['stage'],
-      knowledgeAssessment,
-      claims: claims.length > 0 ? claims : undefined,
-      reasoningSteps: reasoningSteps.length > 0 ? reasoningSteps : undefined,
       overallConfidence: data.overallConfidence as number,
       uncertaintyAreas,
       recommendedApproach: data.recommendedApproach as string,
       monitoringId: data.monitoringId as string,
       iteration: data.iteration as number,
       nextAssessmentNeeded: data.nextAssessmentNeeded as boolean,
-      suggestedAssessments: suggestedAssessments.length > 0 ? suggestedAssessments : undefined
     };
+
+    // NOTE: exactOptionalPropertyTypes is enabled in tsconfig.json.
+    // This means we cannot explicitly assign 'undefined' to optional properties.
+    // Instead, we create a base object with required properties and only add
+    // optional properties if they have a valid value.
+    // Conditionally add optional properties
+    if (knowledgeAssessment) { 
+      validatedData.knowledgeAssessment = knowledgeAssessment;
+    }
+    if (claims.length > 0) {
+      validatedData.claims = claims;
+    }
+    if (reasoningSteps.length > 0) {
+      validatedData.reasoningSteps = reasoningSteps;
+    }
+    if (suggestedAssessments.length > 0) {
+      validatedData.suggestedAssessments = suggestedAssessments;
+    }
+
+    return validatedData as MetacognitiveMonitoringData;
   }
 
   private updateRegistries(data: MetacognitiveMonitoringData): void {
@@ -444,10 +484,10 @@ class MetacognitiveMonitoringServer {
       const assessments = data.suggestedAssessments || [];
       if (assessments.length > 0) {
         for (const assessment of assessments) {
-          output += `  ’ ${assessment} assessment\n`;
+          output += `  ï¿½ ${assessment} assessment\n`;
         }
       } else {
-        output += `  ’ Continue with current assessment\n`;
+        output += `  ï¿½ Continue with current assessment\n`;
       }
     }
     

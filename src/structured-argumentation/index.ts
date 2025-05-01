@@ -71,23 +71,43 @@ class ArgumentationServer {
       throw new Error('Invalid nextArgumentNeeded: must be a boolean');
     }
     
-    return {
+    // Base object with required properties
+    const validatedData: Omit<ArgumentData, 'respondsTo' | 'supports' | 'contradicts' | 'strengths' | 'weaknesses' | 'suggestedNextTypes'> & Partial<Pick<ArgumentData, 'respondsTo' | 'supports' | 'contradicts' | 'strengths' | 'weaknesses' | 'suggestedNextTypes'>> = {
       claim: data.claim as string,
       premises: data.premises as string[],
       conclusion: data.conclusion as string,
       argumentId: (data.argumentId as string) || `arg-${this.nextArgumentId++}`,
       argumentType: data.argumentType as ArgumentData['argumentType'],
       confidence: data.confidence as number,
-      respondsTo: data.respondsTo as string | undefined,
-      supports: Array.isArray(data.supports) ? data.supports as string[] : undefined,
-      contradicts: Array.isArray(data.contradicts) ? data.contradicts as string[] : undefined,
-      strengths: Array.isArray(data.strengths) ? data.strengths as string[] : undefined,
-      weaknesses: Array.isArray(data.weaknesses) ? data.weaknesses as string[] : undefined,
-      nextArgumentNeeded: data.nextArgumentNeeded as boolean,
-      suggestedNextTypes: Array.isArray(data.suggestedNextTypes) 
-        ? data.suggestedNextTypes as ("objection" | "rebuttal" | "synthesis")[] 
-        : undefined,
+      nextArgumentNeeded: typeof data.nextArgumentNeeded === 'boolean' ? data.nextArgumentNeeded : true
     };
+
+    // NOTE: exactOptionalPropertyTypes is enabled in tsconfig.json.
+    // This means we cannot explicitly assign 'undefined' to optional properties.
+    // Instead, we create a base object with required properties and only add
+    // optional properties if they have a valid value.
+    // Conditionally add optional properties
+    if (data.respondsTo && typeof data.respondsTo === 'string') {
+      validatedData.respondsTo = data.respondsTo;
+    }
+    if (Array.isArray(data.supports) && data.supports.length > 0) {
+      validatedData.supports = data.supports as string[];
+    }
+    if (Array.isArray(data.contradicts) && data.contradicts.length > 0) {
+      validatedData.contradicts = data.contradicts as string[];
+    }
+    if (Array.isArray(data.strengths) && data.strengths.length > 0) {
+      validatedData.strengths = data.strengths as string[];
+    }
+    if (Array.isArray(data.weaknesses) && data.weaknesses.length > 0) {
+      validatedData.weaknesses = data.weaknesses as string[];
+    }
+    // Add check for suggestedNextTypes based on original build error
+    if (Array.isArray(data.suggestedNextTypes) && data.suggestedNextTypes.length > 0) {
+      validatedData.suggestedNextTypes = data.suggestedNextTypes;
+    }
+
+    return validatedData as ArgumentData; // Cast back to full type
   }
 
   private formatArgument(argument: ArgumentData): string {

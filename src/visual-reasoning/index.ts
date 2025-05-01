@@ -6,6 +6,7 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
   Tool,
+  CallToolRequest,
 } from "@modelcontextprotocol/sdk/types.js";
 import chalk from 'chalk';
 
@@ -42,6 +43,10 @@ interface VisualOperationData {
   nextOperationNeeded: boolean;
 }
 
+function isTransformationType(value: unknown): value is VisualOperationData['transformationType'] {
+  return typeof value === 'string' && ['rotate', 'move', 'resize', 'recolor', 'regroup'].includes(value);
+}
+
 class VisualReasoningServer {
   private visualStateHistory: Record<string, VisualOperationData[]> = {};
   private currentVisualState: Record<string, Record<string, VisualElement>> = {};
@@ -70,6 +75,11 @@ class VisualReasoningServer {
       throw new Error('Invalid nextOperationNeeded: must be a boolean');
     }
     
+    // Validate transformationType
+    if (!data.transformationType) {
+      throw new Error('Missing required property: transformationType');
+    }
+    
     // Validate elements if provided
     const validatedElements: VisualElement[] = [];
     if (data.elements && Array.isArray(data.elements)) {
@@ -90,18 +100,34 @@ class VisualReasoningServer {
       }
     }
     
-    return {
+    // Base object with non-optional properties
+    const validatedData: Omit<VisualOperationData, 'transformationType' | 'elements' | 'observation' | 'insight'> & Partial<Pick<VisualOperationData, 'transformationType' | 'elements' | 'observation' | 'insight'>> = {
       operation: data.operation as VisualOperationData['operation'],
-      elements: validatedElements.length > 0 ? validatedElements : undefined,
-      transformationType: data.transformationType as VisualOperationData['transformationType'],
       diagramId: data.diagramId as string,
       diagramType: data.diagramType as VisualOperationData['diagramType'],
       iteration: data.iteration as number,
-      observation: data.observation as string | undefined,
-      insight: data.insight as string | undefined,
-      hypothesis: data.hypothesis as string | undefined,
-      nextOperationNeeded: data.nextOperationNeeded as boolean,
+      nextOperationNeeded: typeof data.nextOperationNeeded === 'boolean' ? data.nextOperationNeeded : true
     };
+
+    // NOTE: exactOptionalPropertyTypes is enabled in tsconfig.json.
+    // This means we cannot explicitly assign 'undefined' to optional properties.
+    // Instead, we create a base object with required properties and only add
+    // optional properties if they have a valid value.
+    // Conditionally add optional properties
+    if (isTransformationType(data.transformationType)) { 
+      validatedData.transformationType = data.transformationType;
+    } 
+    if (data.observation) {
+      validatedData.observation = data.observation as string;
+    }
+    if (data.insight) {
+      validatedData.insight = data.insight as string;
+    }
+    if (validatedElements.length > 0) {
+      validatedData.elements = validatedElements;
+    }
+
+    return validatedData as VisualOperationData; // Cast back to full type for return
   }
 
   private updateVisualState(operation: VisualOperationData): void {
@@ -246,7 +272,12 @@ class VisualReasoningServer {
           if (!graph.has(edge.source)) {
             graph.set(edge.source, []);
           }
-          graph.get(edge.source)?.push({target: edge.target, label: edge.label});
+          // Conditionally add label to the pushed object
+          const edgeTargetObject: { target: string; label?: string } = { target: edge.target };
+          if (edge.label && typeof edge.label === 'string') {
+            edgeTargetObject.label = edge.label;
+          }
+          graph.get(edge.source)?.push(edgeTargetObject);
         }
         
         // Render flowchart using graph
@@ -560,7 +591,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
   tools: [VISUAL_REASONING_TOOL],
 }));
 
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
+server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest) => {
   if (request.params.name === "visualReasoning") {
     return visualReasoningServer.processVisualOperation(request.params.arguments);
   }

@@ -24,6 +24,10 @@ class VisualReasoningServer {
         if (typeof data.nextOperationNeeded !== 'boolean') {
             throw new Error('Invalid nextOperationNeeded: must be a boolean');
         }
+        // Validate transformationType
+        if (!data.transformationType) {
+            throw new Error('Missing required property: transformationType');
+        }
         // Validate elements if provided
         const validatedElements = [];
         if (data.elements && Array.isArray(data.elements)) {
@@ -40,18 +44,22 @@ class VisualReasoningServer {
                 validatedElements.push(element);
             }
         }
-        return {
+        // Build the validated object conditionally
+        const validatedData = {
             operation: data.operation,
-            elements: validatedElements.length > 0 ? validatedElements : undefined,
+            // elements added conditionally below
             transformationType: data.transformationType,
             diagramId: data.diagramId,
             diagramType: data.diagramType,
             iteration: data.iteration,
             observation: data.observation,
             insight: data.insight,
-            hypothesis: data.hypothesis,
-            nextOperationNeeded: data.nextOperationNeeded,
+            nextOperationNeeded: data.nextOperationNeeded
         };
+        if (validatedElements.length > 0) {
+            validatedData.elements = validatedElements;
+        }
+        return validatedData;
     }
     updateVisualState(operation) {
         const { diagramId, elements, operation: operationType } = operation;
@@ -178,7 +186,12 @@ class VisualReasoningServer {
                     if (!graph.has(edge.source)) {
                         graph.set(edge.source, []);
                     }
-                    graph.get(edge.source)?.push({ target: edge.target, label: edge.label });
+                    // Conditionally add label to the pushed object
+                    const edgeTargetObject = { target: edge.target };
+                    if (edge.label && typeof edge.label === 'string') {
+                        edgeTargetObject.label = edge.label;
+                    }
+                    graph.get(edge.source)?.push(edgeTargetObject);
                 }
                 // Render flowchart using graph
                 const visited = new Set();
@@ -476,3 +489,4 @@ runServer().catch((error) => {
     console.error("Fatal error running server:", error);
     process.exit(1);
 });
+//# sourceMappingURL=index.js.map

@@ -1,8 +1,13 @@
 #!/usr/bin/env node
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { CallToolRequestSchema, ListToolsRequestSchema, } from "@modelcontextprotocol/sdk/types.js";
+import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import chalk from 'chalk';
+// Type guard for DomainElement type
+const allowedElementTypes = ["entity", "attribute", "relation", "process"];
+function isValidElementType(type) {
+    return typeof type === 'string' && allowedElementTypes.includes(type);
+}
 class AnalogicalReasoningServer {
     analogyHistory = {};
     domainRegistry = {};
@@ -58,10 +63,13 @@ class AnalogicalReasoningServer {
             if (!element.type || typeof element.type !== 'string') {
                 throw new Error(`Invalid element type for element ${element.id}: must be a string`);
             }
+            if (!isValidElementType(element.type)) {
+                throw new Error(`Invalid element type for element ${element.id}: must be one of ${allowedElementTypes.join(', ')}`);
+            }
             if (!element.description || typeof element.description !== 'string') {
                 throw new Error(`Invalid element description for element ${element.id}: must be a string`);
             }
-            sourceElements.push(element);
+            sourceElements.push({ id: element.id, name: element.name, type: element.type, description: element.description });
         }
         const targetElements = [];
         for (const element of targetDomain.elements) {
@@ -74,10 +82,13 @@ class AnalogicalReasoningServer {
             if (!element.type || typeof element.type !== 'string') {
                 throw new Error(`Invalid element type for element ${element.id}: must be a string`);
             }
+            if (!isValidElementType(element.type)) {
+                throw new Error(`Invalid element type for element ${element.id}: must be one of ${allowedElementTypes.join(', ')}`);
+            }
             if (!element.description || typeof element.description !== 'string') {
                 throw new Error(`Invalid element description for element ${element.id}: must be a string`);
             }
-            targetElements.push(element);
+            targetElements.push({ id: element.id, name: element.name, type: element.type, description: element.description });
         }
         // Validate mappings
         const mappings = [];
@@ -103,13 +114,17 @@ class AnalogicalReasoningServer {
                         }
                     }
                 }
-                mappings.push({
+                const mappingData = {
                     sourceElement: mapping.sourceElement,
                     targetElement: mapping.targetElement,
                     mappingStrength: mapping.mappingStrength,
                     justification: mapping.justification,
-                    limitations: limitations.length > 0 ? limitations : undefined
-                });
+                    // limitations is added conditionally below
+                };
+                if (limitations.length > 0) {
+                    mappingData.limitations = limitations;
+                }
+                mappings.push(mappingData);
             }
         }
         // Validate arrays
@@ -164,8 +179,8 @@ class AnalogicalReasoningServer {
                 }
             }
         }
-        // Create validated data object
-        return {
+        // Create validated data object with conditional suggestedOperations
+        const validatedData = {
             sourceDomain: {
                 name: sourceDomain.name,
                 elements: sourceElements
@@ -183,8 +198,12 @@ class AnalogicalReasoningServer {
             limitations,
             inferences,
             nextOperationNeeded: data.nextOperationNeeded,
-            suggestedOperations: suggestedOperations.length > 0 ? suggestedOperations : undefined
+            // suggestedOperations is added conditionally below
         };
+        if (suggestedOperations.length > 0) {
+            validatedData.suggestedOperations = suggestedOperations;
+        }
+        return validatedData;
     }
     updateDomainRegistry(domain) {
         this.domainRegistry[domain.name] = {
@@ -193,19 +212,20 @@ class AnalogicalReasoningServer {
         };
     }
     updateAnalogicalReasoning(data) {
-        // Initialize analogy history if needed
-        if (!this.analogyHistory[data.analogyId]) {
-            this.analogyHistory[data.analogyId] = [];
+        let historyEntry = this.analogyHistory[data.analogyId]; // Get potential entry
+        if (!historyEntry) { // Check if it exists
+            historyEntry = []; // Create new array if not
+            this.analogyHistory[data.analogyId] = historyEntry; // Assign it back to the object
         }
-        // Add to analogy history
-        this.analogyHistory[data.analogyId].push(data);
+        // Now, historyEntry is guaranteed to be AnalogicalReasoningData[]
+        historyEntry.push(data);
         // Update domain registry
         this.updateDomainRegistry(data.sourceDomain);
         this.updateDomainRegistry(data.targetDomain);
     }
     visualizeMapping(data) {
         const { sourceDomain, targetDomain, mappings } = data;
-        let output = `\n${chalk.bold(`ANALOGY: ${sourceDomain.name} � ${targetDomain.name}`)} (ID: ${data.analogyId})\n\n`;
+        let output = `\n${chalk.bold(`ANALOGY: ${sourceDomain.name}  ${targetDomain.name}`)} (ID: ${data.analogyId})\n\n`;
         // Purpose and confidence
         output += `${chalk.cyan('Purpose:')} ${data.purpose}\n`;
         output += `${chalk.cyan('Confidence:')} ${(data.confidence * 100).toFixed(0)}%\n`;
@@ -299,11 +319,11 @@ class AnalogicalReasoningServer {
             const operations = data.suggestedOperations || [];
             if (operations.length > 0) {
                 for (const operation of operations) {
-                    output += `  � ${operation}\n`;
+                    output += `   ${operation}\n`;
                 }
             }
             else {
-                output += `  � Continue refining the analogy\n`;
+                output += `   Continue refining the analogy\n`;
             }
         }
         return output;
@@ -591,3 +611,4 @@ runServer().catch((error) => {
     console.error("Fatal error running server:", error);
     process.exit(1);
 });
+//# sourceMappingURL=index.js.map
