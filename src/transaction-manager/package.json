@@ -1,0 +1,49 @@
+{
+  "name": "@waldzellai/transaction-manager",
+  "version": "0.1.0",
+  "description": "MCP meta-server for managing stateful interactions via transaction tokens",
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/waldzellai/model-enhancement-servers.git",
+    "directory": "src/transaction-manager"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://github.com/waldzellai/model-enhancement-servers/tree/main/src/transaction-manager",
+  "author": "glassBead",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "transaction-manager",
+    "stateful",
+    "redis"
+  ],
+  "bin": {
+    "mcp-server-transaction-manager": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc && shx chmod +x dist/*.js",
+    "watch": "tsc --watch"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.10.2",
+    "chalk": "^5.3.0",
+    "ioredis": "^5.4.1",
+    "redis-server": "^1.2.2",
+    "uuid": "^9.0.1",
+    "yargs": "^17.7.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "@types/uuid": "^9.0.8",
+    "@types/yargs": "^17.0.32",
+    "shx": "^0.3.4",
+    "typescript": "^5.3.3"
+  }
+}

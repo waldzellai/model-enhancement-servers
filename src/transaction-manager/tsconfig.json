@@ -1,0 +1,27 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "../..", 
+    "paths": {
+      "@modelcontextprotocol/sdk": [
+        "node_modules/@modelcontextprotocol/sdk/dist/index.d.ts" 
+      ],
+      "@modelcontextprotocol/sdk/*": [
+        "node_modules/@modelcontextprotocol/sdk/dist/*" 
+      ]
+    },
+    // "moduleResolution": "Node", // Removed override
+    "outDir": "./dist",
+    "rootDir": ".", 
+    "skipLibCheck": true
+  },
+  "include": [
+    "index.ts",
+    "server.ts",
+    "lib/**/*.ts"
+  ], 
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}
