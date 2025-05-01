@@ -1,6 +1,6 @@
 {
   "name": "@waldzellai/collaborative-reasoning",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "MCP server for diagrammatic thinking and spatial representation",
   "license": "MIT",
   "type": "module",

@@ -24,6 +24,8 @@ WORKDIR /app
 COPY --from=build /app/src/collaborative-reasoning/dist ./dist
 COPY --from=build /app/src/collaborative-reasoning/package.json ./
 
+ENV NODE_ENV=production
+
 # Install only production dependencies
 RUN npm ci --omit=dev
 
