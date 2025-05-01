@@ -1,5 +1,7 @@
 # Structured Argumentation MCP Server
 
+[![smithery badge](https://smithery.ai/badge/@waldzellai/structured-argumentation)](https://smithery.ai/server/@waldzellai/structured-argumentation)
+
 ## Motivation
 
 Modern LLMs struggle with rigorously evaluating competing ideas, particularly when complex trade-offs, multiple stakeholders, or value tensions are involved. While models can generate arguments in both directions, they often:
