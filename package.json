@@ -16,11 +16,15 @@
   "scripts": {
     "build": "npm run build --workspaces",
     "watch": "npm run watch --workspaces",
-    "prepare": "npm run build",
     "publish-all": "npm publish --workspaces --access public",
     "link-all": "npm link --workspaces"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.10.2",
+    "chalk": "^5.3.0",
+    "ioredis": "^5.4.1",
+    "uuid": "^9.0.1",
+    "yargs": "^17.7.2",
     "@waldzellai/analogical-reasoning": "*",
     "@waldzellai/collaborative-reasoning": "*",
     "@waldzellai/decision-framework": "*",
@@ -28,5 +32,12 @@
     "@waldzellai/scientific-method": "*",
     "@waldzellai/structured-argumentation": "*",
     "@waldzellai/visual-reasoning": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "@types/uuid": "^9.0.8",
+    "@types/yargs": "^17.0.32",
+    "shx": "^0.3.4",
+    "typescript": "^5.3.3"
   }
 }

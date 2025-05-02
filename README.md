@@ -58,7 +58,7 @@ Clone the repository and install dependencies:
 
 ```bash
 git clone https://github.com/waldzellai/model-enhancement-servers.git
-cd servers
+cd model-enhancement-servers
 npm install
 ```
 
