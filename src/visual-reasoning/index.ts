@@ -5,6 +5,8 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
+  ListResourcesRequestSchema,
+  ListPromptsRequestSchema,
   Tool,
   CallToolRequest,
 } from "@modelcontextprotocol/sdk/types.js";
@@ -589,6 +591,14 @@ const visualReasoningServer = new VisualReasoningServer();
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
   tools: [VISUAL_REASONING_TOOL],
+}));
+
+server.setRequestHandler(ListResourcesRequestSchema, async () => ({
+  resources: [],
+}));
+
+server.setRequestHandler(ListPromptsRequestSchema, async () => ({
+  prompts: [],
 }));
 
 server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest) => {
