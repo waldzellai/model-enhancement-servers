@@ -1,0 +1,27 @@
+{
+  "name": "focus-group-server",
+  "version": "0.1.0",
+  "description": "MCP server for LLM focus groups to analyze and critique other MCP servers",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "prepare": "tsc",
+    "watch": "tsc -w"
+  },
+  "keywords": [
+    "mcp",
+    "focus-group",
+    "server-analysis",
+    "llm-evaluation"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.6",
+    "chalk": "^5.2.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.2",
+    "@types/node": "^18.15.5"
+  }
+}

@@ -1,0 +1,61 @@
+schema: 1
+name: focus-group
+version: 0.1.0
+description: MCP server for LLM focus groups to analyze and critique other MCP servers
+license: MIT
+repository: https://github.com/your-username/focus-group-server
+tools:
+  - name: focusGroup
+    description: A specialized tool for conducting LLM-based focus groups to evaluate MCP servers
+    type: custom
+    inputSchema:
+      type: object
+      properties:
+        targetServer:
+          type: string
+          description: The name of the MCP server being evaluated
+        personas:
+          type: array
+          description: The user personas participating in the focus group
+          items:
+            type: object
+        feedback:
+          type: array
+          description: Feedback from the personas
+          items:
+            type: object
+        stage:
+          type: string
+          enum:
+            - introduction
+            - initial-impressions
+            - deep-dive
+            - synthesis
+            - recommendations
+            - prioritization
+          description: Current stage of the focus group process
+        activePersonaId:
+          type: string
+          description: ID of the currently active persona
+        sessionId:
+          type: string
+          description: Unique identifier for this focus group session
+        iteration:
+          type: number
+          description: Current iteration of the focus group
+        nextFeedbackNeeded:
+          type: boolean
+          description: Whether another round of feedback is needed
+      required:
+        - targetServer
+        - personas
+        - feedback
+        - stage
+        - activePersonaId
+        - sessionId
+        - iteration
+        - nextFeedbackNeeded
+mcp:
+  server:
+    type: stdio
+    path: dist/index.js

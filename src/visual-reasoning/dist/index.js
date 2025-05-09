@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { CallToolRequestSchema, ListToolsRequestSchema, } from "@modelcontextprotocol/sdk/types.js";
+import { CallToolRequestSchema, ListToolsRequestSchema, ListResourcesRequestSchema, ListPromptsRequestSchema, } from "@modelcontextprotocol/sdk/types.js";
 import chalk from 'chalk';
 function isTransformationType(value) {
     return typeof value === 'string' && ['rotate', 'move', 'resize', 'recolor', 'regroup'].includes(value);
@@ -480,6 +480,12 @@ const server = new Server({
 const visualReasoningServer = new VisualReasoningServer();
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
     tools: [VISUAL_REASONING_TOOL],
+}));
+server.setRequestHandler(ListResourcesRequestSchema, async () => ({
+    resources: [],
+}));
+server.setRequestHandler(ListPromptsRequestSchema, async () => ({
+    prompts: [],
 }));
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
     if (request.params.name === "visualReasoning") {
