@@ -1,5 +1,7 @@
 # Scientific Method MCP Server
 
+[![smithery badge](https://smithery.ai/badge/@waldzellai/scientific-method)](https://smithery.ai/server/@waldzellai/scientific-method)
+
 ## Motivation
 
 Language models often struggle with applying rigorous scientific reasoning. While they can describe the scientific method, they frequently:
@@ -192,3 +194,11 @@ The server is implemented using TypeScript with:
 - Standard MCP server connection via stdin/stdout
 
 This server provides significant enhancement to model reasoning in domains requiring causal analysis, hypothesis testing, and evidence evaluation - essentially any context where rigorous scientific thinking would benefit human reasoning as well.
+
+### Installing via Smithery
+
+To install Scientific Method Server for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@waldzellai/scientific-method):
+
+```bash
+npx -y @smithery/cli install @waldzellai/scientific-method --client claude
+```
