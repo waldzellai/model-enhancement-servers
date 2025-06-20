@@ -6,7 +6,9 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
   Tool,
-  CallToolRequest
+  CallToolRequest,
+  CreateMessageRequest,
+  CreateMessageResult
 } from "@modelcontextprotocol/sdk/types.js";
 import chalk from 'chalk';
 
@@ -73,6 +75,7 @@ class AnalogicalReasoningServer {
     elements: DomainElement[];
   }> = {};
   private nextElementId = 1;
+  constructor(private server: Server) {}
 
   private validateAnalogicalReasoningData(input: unknown): AnalogicalReasoningData {
     const data = input as Record<string, unknown>;
@@ -454,7 +457,7 @@ class AnalogicalReasoningServer {
     return output;
   }
 
-  public processAnalogicalReasoning(input: unknown): { content: Array<{ type: string; text: string }>; isError?: boolean } {
+  public async processAnalogicalReasoning(input: unknown): Promise<{ content: Array<{ type: string; text: string }>; isError?: boolean }> {
     try {
       const validatedInput = this.validateAnalogicalReasoningData(input);
       
@@ -464,7 +467,27 @@ class AnalogicalReasoningServer {
       // Generate visualization
       const visualization = this.visualizeMapping(validatedInput);
       console.error(visualization);
-      
+
+      let samplingSummary: string | undefined;
+      try {
+        const samplingResult = await this.server.createMessage({
+          messages: [
+            {
+              role: "user",
+              content: { type: "text", text: `Summarize this analogy:\n\n${visualization}` }
+            }
+          ],
+          systemPrompt: "You are a helpful assistant summarizing analogical reasoning results.",
+          maxTokens: 120,
+          modelPreferences: { hints: [{ name: "gpt-4" }] }
+        });
+        if (samplingResult.content.type === "text") {
+          samplingSummary = samplingResult.content.text;
+        }
+      } catch (e) {
+        console.error("Sampling failed", e);
+      }
+
       // Return the analysis result
       return {
         content: [{
@@ -478,7 +501,8 @@ class AnalogicalReasoningServer {
             mappingCount: validatedInput.mappings.length,
             inferenceCount: validatedInput.inferences.length,
             nextOperationNeeded: validatedInput.nextOperationNeeded,
-            suggestedOperations: validatedInput.suggestedOperations
+            suggestedOperations: validatedInput.suggestedOperations,
+            samplingSummary
           }, null, 2)
         }]
       };
@@ -721,7 +745,7 @@ const server = new Server(
   }
 );
 
-const analogicalReasoningServer = new AnalogicalReasoningServer();
+const analogicalReasoningServer = new AnalogicalReasoningServer(server);
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
   tools: [ANALOGICAL_REASONING_TOOL],
@@ -729,7 +753,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
 
 server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest) => {
   if (request.params.name === "analogicalReasoning") {
-    return analogicalReasoningServer.processAnalogicalReasoning(request.params.arguments);
+    return await analogicalReasoningServer.processAnalogicalReasoning(request.params.arguments);
   }
 
   return {
