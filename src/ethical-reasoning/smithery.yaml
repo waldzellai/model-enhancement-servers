@@ -1,0 +1,14 @@
+build:
+  dockerBuildPath: ../../
+  dockerfile: src/ethical-reasoning/Dockerfile
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    properties: {}
+  commandFunction: |
+    (config) => ({
+      command: 'node',
+      args: ['dist/index.js'],
+      env: {}
+    })

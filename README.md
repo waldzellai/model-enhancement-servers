@@ -13,6 +13,15 @@ This monorepo contains the following MCP servers:
 5. **Metacognitive Monitoring** - A server for knowledge assessment and confidence tracking
 6. **Decision Framework** - A server for structured decision analysis
 7. **Collaborative Reasoning** - A server for multi-perspective problem solving
+8. **Ethical Reasoning** - A server for evaluating actions with moral frameworks
+
+## Potential Future Servers
+
+The following server ideas are under consideration to further extend model reasoning capabilities:
+
+1. **Emotion-Aware Interaction** - Provides sentiment tracking and mood-aware responses to improve empathic communication.
+2. **Long-Term Memory** - Maintains persistent context across sessions for continuity and recall of past interactions.
+
 
 ## Installation
 
