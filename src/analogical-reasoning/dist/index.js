@@ -341,25 +341,9 @@ class AnalogicalReasoningServer {
             const visualization = this.visualizeMapping(validatedInput);
             console.error(visualization);
             let samplingSummary;
-            try {
-                const samplingResult = await this.server.createMessage({
-                    messages: [
-                        {
-                            role: "user",
-                            content: { type: "text", text: `Summarize this analogy:\n\n${visualization}` }
-                        }
-                    ],
-                    systemPrompt: "You are a helpful assistant summarizing analogical reasoning results.",
-                    maxTokens: 120,
-                    modelPreferences: { hints: [{ name: "gpt-4" }] }
-                });
-                if (samplingResult.content.type === "text") {
-                    samplingSummary = samplingResult.content.text;
-                }
-            }
-            catch (e) {
-                console.error("Sampling failed", e);
-            }
+            // Note: Servers must not call client-only SDK methods. Summarization is disabled here.
+            // If summarization is desired, provide it via a separate service or client-side call.
+            samplingSummary = undefined;
             // Return the analysis result
             return {
                 content: [{
