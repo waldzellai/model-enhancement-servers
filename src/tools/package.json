@@ -1,0 +1,37 @@
+{
+  "name": "@waldzellai/tools",
+  "version": "0.1.0",
+  "description": "Utility CLI tools for reports and assets",
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/waldzellai/model-enhancement-servers.git",
+    "directory": "src/tools"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "bin": {
+    "report-memo": "dist/report.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc && shx chmod +x dist/*.js",
+    "prepare": "npm run build",
+    "watch": "tsc --watch"
+  },
+  "dependencies": {
+    "eta": "^3.4.0",
+    "node-fetch": "^3.3.2",
+    "yargs": "^17.7.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "@types/yargs": "^17.0.32",
+    "shx": "^0.3.4",
+    "typescript": "^5.3.3"
+  }
+}

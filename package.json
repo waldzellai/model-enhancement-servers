@@ -31,7 +31,8 @@
     "@waldzellai/metacognitive-monitoring": "*",
     "@waldzellai/scientific-method": "*",
     "@waldzellai/structured-argumentation": "*",
-    "@waldzellai/visual-reasoning": "*"
+    "@waldzellai/visual-reasoning": "*",
+    "@waldzellai/tools": "*"
   },
   "devDependencies": {
     "@types/node": "^22",
