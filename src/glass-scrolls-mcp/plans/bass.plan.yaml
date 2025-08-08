@@ -1,0 +1,25 @@
+name: bass-demo
+steps:
+  - id: think1
+    type: think
+    prompt: |
+      Draft a succinct greeting for the bass demo.
+  - id: echo_greeting
+    type: tool
+    tool: echo
+    args:
+      message: "${ref:think1.output}"
+  - id: think2
+    type: think
+    prompt: |
+      Refine this message using the echo output:
+      ${ref:echo_greeting.output.message}
+  - id: write_memo
+    type: tool
+    tool: write_file
+    args:
+      path: memo.md
+      content: |
+        # BASS Demo Memo
+
+        ${ref:think2.output}

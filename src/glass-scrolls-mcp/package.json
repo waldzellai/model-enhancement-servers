@@ -1,0 +1,44 @@
+{
+  "name": "@waldzellai/glass-scrolls-mcp",
+  "version": "0.1.0",
+  "description": "Glass Scrolls MCP - Plan runner demo for bass plan",
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/waldzellai/model-enhancement-servers.git",
+    "directory": "src/glass-scrolls-mcp"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://github.com/waldzellai/model-enhancement-servers/tree/main/src/glass-scrolls-mcp",
+  "author": "glassBead",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "plan-runner",
+    "agentic"
+  ],
+  "bin": {
+    "glass-scrolls-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "plans"
+  ],
+  "scripts": {
+    "build": "tsc && shx chmod +x dist/*.js && shx cp -r plans dist/ || true",
+    "prepare": "npm run build",
+    "watch": "tsc --watch",
+    "demo:bass": "node dist/index.js demo:bass"
+  },
+  "dependencies": {
+    "yaml": "^2.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "shx": "^0.3.4",
+    "typescript": "^5.3.3"
+  }
+}

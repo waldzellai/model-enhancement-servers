@@ -12,13 +12,14 @@
   "workspaces": [
     "src/*"
   ],
-  "files": [],
   "scripts": {
-    "build": "npm run build --workspaces",
-    "watch": "npm run watch --workspaces",
+    "build": "pnpm -r run build",
+    "watch": "pnpm -r run watch",
     "publish-all": "npm publish --workspaces --access public",
-    "link-all": "npm link --workspaces"
+    "link-all": "npm link --workspaces",
+          "demo:bass": "node src/glass-scrolls-mcp/dist/index.js demo:bass"
   },
+  "files": [],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.10.2",
     "chalk": "^5.3.0",
