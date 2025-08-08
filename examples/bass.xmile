@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xmile version="1.0" xmlns="http://www.iseesystems.com/XMILE">
+  <header>
+    <name>Exponential Decay</name>
+  </header>
+  <sim_specs method="euler">
+    <start>0</start>
+    <stop>10</stop>
+    <dt>1</dt>
+  </sim_specs>
+  <model>
+    <variables>
+      <stock name="stock">
+        <eqn>100</eqn>
+        <outflow>decay</outflow>
+      </stock>
+      <flow name="decay">
+        <eqn>k * stock</eqn>
+      </flow>
+      <aux name="k"><eqn>0.1</eqn></aux>
+    </variables>
+  </model>
+</xmile>
