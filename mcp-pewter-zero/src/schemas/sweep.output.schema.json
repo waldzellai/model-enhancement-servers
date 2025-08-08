@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["runs"],
+  "properties": {
+    "runs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["params", "series"],
+        "properties": {
+          "params": { "type": "object", "additionalProperties": { "type": "number" } },
+          "series": {
+            "type": "object",
+            "required": ["t", "y"],
+            "properties": {
+              "t": { "type": "array", "items": { "type": "number" } },
+              "y": {
+                "type": "object",
+                "additionalProperties": { "type": "array", "items": { "type": "number" } }
+              }
+            },
+            "additionalProperties": false
+          },
+          "score": { "type": "number" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
