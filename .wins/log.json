@@ -1,0 +1,10 @@
+[
+  {
+    "timestamp": "2025-08-08T22:12:21.463Z",
+    "template": "or-server",
+    "demo": "bass",
+    "kind": "local",
+    "ci": false,
+    "host": "cursor"
+  }
+]

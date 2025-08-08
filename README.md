@@ -1,5 +1,7 @@
 # Cognitive Enhancement MCP Servers
 
+[![CI](https://github.com/waldzellai/model-enhancement-servers/actions/workflows/ci.yml/badge.svg)](https://github.com/waldzellai/model-enhancement-servers/actions/workflows/ci.yml)
+
 A collection of Model Context Protocol servers that provide cognitive enhancement tools for large language models.
 
 ## Servers
