@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["series"],
+  "properties": {
+    "series": {
+      "type": "object",
+      "required": ["t", "y"],
+      "properties": {
+        "t": { "type": "array", "items": { "type": "number" } },
+        "y": {
+          "type": "object",
+          "additionalProperties": { "type": "array", "items": { "type": "number" } }
+        }
+      },
+      "additionalProperties": false
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": { "type": "number" }
+    }
+  },
+  "additionalProperties": false
+}

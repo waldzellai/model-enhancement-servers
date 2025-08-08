@@ -1,0 +1,53 @@
+id: bass-demo
+steps:
+  - id: framing
+    kind: think
+    prompt: |
+      You are an Operational Reasoning agent. We will run a Bass diffusion demo.
+      Goal: produce a short memo recommending a parameter policy and expected effects.
+
+  - id: baseline-run
+    kind: tool
+    toolName: run_model
+    input:
+      spec:
+        kind: python
+        entry: python.models.bass_diffusion:model
+        variables: [A]
+        dt: 0.5
+        t_end: 50
+      params: { p: 0.03, q: 0.38, M: 10000 }
+
+  - id: propose-sweeps
+    kind: think
+    prompt: |
+      Propose a small grid over p and q that brackets baseline values with ±50%.
+      Keep total runs <= 12.
+
+  - id: sweep
+    kind: tool
+    toolName: sweep
+    input:
+      spec: { kind: python, entry: python.models.bass_diffusion:model, variables: [A], dt: 0.5, t_end: 50 }
+      grid: { p: [0.015,0.03,0.045], q: [0.19,0.38,0.57], M: [10000] }
+      budget: 12
+
+  - id: sensitivity
+    kind: tool
+    toolName: sensitivity
+    input:
+      spec: { kind: python, entry: python.models.bass_diffusion:model, variables: [A], dt: 0.5, t_end: 50 }
+      baseline: { p: 0.03, q: 0.38, M: 10000 }
+      method: one_at_a_time
+
+  - id: memo
+    kind: tool
+    toolName: report
+    input:
+      title: "Bass diffusion — OR memo"
+      runs:
+        - label: baseline
+          params: { p: 0.03, q: 0.38, M: 10000 }
+          series: $ref: baseline-run.series
+      memoTemplatePath: demos/bass/memo.template.md
+      outDir: demos/bass/out

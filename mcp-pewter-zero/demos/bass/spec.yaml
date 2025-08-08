@@ -1,0 +1,11 @@
+model:
+  kind: python
+  entry: python.models.bass_diffusion:model
+  variables: [A]
+run:
+  dt: 0.5
+  t_end: 50
+params:
+  p: 0.03
+  q: 0.38
+  M: 10000
