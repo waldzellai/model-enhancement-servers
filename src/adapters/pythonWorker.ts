@@ -1,6 +1,8 @@
 import { spawn } from 'node:child_process'
 import { writeFile } from 'node:fs/promises'
 import path from 'node:path'
+import { existsSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 
 export type PythonWorkerRequest = {
   fn: string
@@ -9,7 +11,16 @@ export type PythonWorkerRequest = {
 
 export async function callPythonWorker<T = any>(request: PythonWorkerRequest): Promise<T> {
   const pythonPath = 'python3'
-  const workerPath = path.resolve('/workspace/python/worker/main.py')
+  const moduleDir = path.dirname(fileURLToPath(import.meta.url))
+  const configuredWorkerPath = process.env.PYTHON_WORKER_PATH ? path.resolve(process.env.PYTHON_WORKER_PATH) : undefined
+
+  const candidatePaths = [
+    configuredWorkerPath,
+    path.resolve(moduleDir, '../../python/worker/main.py'),
+    path.resolve(process.cwd(), 'python/worker/main.py'),
+  ].filter((p): p is string => Boolean(p))
+
+  const workerPath = candidatePaths.find((p) => existsSync(p)) ?? candidatePaths[0]
 
   return new Promise<T>((resolve, reject) => {
     const child = spawn(pythonPath, [workerPath], {
