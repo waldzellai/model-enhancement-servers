@@ -17,7 +17,9 @@
     "build": "npm run build --workspaces",
     "watch": "npm run watch --workspaces",
     "publish-all": "npm publish --workspaces --access public",
-    "link-all": "npm link --workspaces"
+    "link-all": "npm link --workspaces",
+    "demo:bass": "tsx scripts/demo-bass.ts",
+    "test": "echo 'No tests yet' && exit 0"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.10.2",
@@ -38,6 +40,7 @@
     "@types/uuid": "^9.0.8",
     "@types/yargs": "^17.0.32",
     "shx": "^0.3.4",
+    "tsx": "^4.19.0",
     "typescript": "^5.3.3"
   }
 }
