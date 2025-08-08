@@ -14,6 +14,11 @@ This monorepo contains the following MCP servers:
 6. **Decision Framework** - A server for structured decision analysis
 7. **Collaborative Reasoning** - A server for multi-perspective problem solving
 8. **Ethical Reasoning** - A server for evaluating actions with moral frameworks
+9. **Bias Detection** - A server for flagging potentially biased wording
+10. **Constraint Solver** - A server for validating logical and numeric constraints
+11. **Narrative Planner** - A server for generating simple story outlines
+12. **Goal Tracker** - A server for maintaining and completing objectives
+13. **Multimodal Synthesizer** - A server for combining text and image descriptions
 
 ## Potential Future Servers
 
