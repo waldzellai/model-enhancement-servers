@@ -9,9 +9,13 @@ function isValidElementType(type) {
     return typeof type === 'string' && allowedElementTypes.includes(type);
 }
 class AnalogicalReasoningServer {
+    server;
     analogyHistory = {};
     domainRegistry = {};
     nextElementId = 1;
+    constructor(server) {
+        this.server = server;
+    }
     validateAnalogicalReasoningData(input) {
         const data = input;
         // Validate required fields
@@ -328,7 +332,7 @@ class AnalogicalReasoningServer {
         }
         return output;
     }
-    processAnalogicalReasoning(input) {
+    async processAnalogicalReasoning(input) {
         try {
             const validatedInput = this.validateAnalogicalReasoningData(input);
             // Update analogy state
@@ -336,6 +340,26 @@ class AnalogicalReasoningServer {
             // Generate visualization
             const visualization = this.visualizeMapping(validatedInput);
             console.error(visualization);
+            let samplingSummary;
+            try {
+                const samplingResult = await this.server.createMessage({
+                    messages: [
+                        {
+                            role: "user",
+                            content: { type: "text", text: `Summarize this analogy:\n\n${visualization}` }
+                        }
+                    ],
+                    systemPrompt: "You are a helpful assistant summarizing analogical reasoning results.",
+                    maxTokens: 120,
+                    modelPreferences: { hints: [{ name: "gpt-4" }] }
+                });
+                if (samplingResult.content.type === "text") {
+                    samplingSummary = samplingResult.content.text;
+                }
+            }
+            catch (e) {
+                console.error("Sampling failed", e);
+            }
             // Return the analysis result
             return {
                 content: [{
@@ -349,7 +373,8 @@ class AnalogicalReasoningServer {
                             mappingCount: validatedInput.mappings.length,
                             inferenceCount: validatedInput.inferences.length,
                             nextOperationNeeded: validatedInput.nextOperationNeeded,
-                            suggestedOperations: validatedInput.suggestedOperations
+                            suggestedOperations: validatedInput.suggestedOperations,
+                            samplingSummary
                         }, null, 2)
                     }]
             };
@@ -586,13 +611,13 @@ const server = new Server({
         tools: {},
     },
 });
-const analogicalReasoningServer = new AnalogicalReasoningServer();
+const analogicalReasoningServer = new AnalogicalReasoningServer(server);
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
     tools: [ANALOGICAL_REASONING_TOOL],
 }));
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
     if (request.params.name === "analogicalReasoning") {
-        return analogicalReasoningServer.processAnalogicalReasoning(request.params.arguments);
+        return await analogicalReasoningServer.processAnalogicalReasoning(request.params.arguments);
     }
     return {
         content: [{

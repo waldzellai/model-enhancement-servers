@@ -52,6 +52,17 @@ All servers are available as Docker images:
 docker run --rm -i waldzellai/structured-argumentation
 ```
 
+## Demos
+
+- Bass plan loop demo:
+
+  ```sh
+  pnpm install
+  pnpm --filter @waldzellai/glass-scrolls-mcp run build
+  pnpm demo:bass
+  # writes memo.md and trace.json in repo root
+  ```
+
 ## Development
 
 Clone the repository and install dependencies:
