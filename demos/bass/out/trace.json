@@ -1,0 +1,8 @@
+{
+  "trace": [
+    { "event": "start" },
+    { "event": "server_ready" },
+    { "event": "write_outputs" },
+    { "event": "done" }
+  ]
+}
