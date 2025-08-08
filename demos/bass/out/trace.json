@@ -1,0 +1,72 @@
+[
+  {
+    "ts": 1754690003165,
+    "type": "toolCall",
+    "stepId": "step-1",
+    "toolName": "python",
+    "input": {
+      "a": 1,
+      "b": 2
+    },
+    "output": null,
+    "durationMs": 0
+  },
+  {
+    "ts": 1754690003167,
+    "type": "toolResult",
+    "stepId": "step-1",
+    "toolName": "python",
+    "input": {
+      "a": 1,
+      "b": 2
+    },
+    "output": {
+      "echoed": {
+        "a": 1,
+        "b": 2
+      },
+      "note": "computed-by-stub-python"
+    },
+    "durationMs": 2
+  },
+  {
+    "ts": 1754690003167,
+    "type": "toolCall",
+    "stepId": "step-2",
+    "toolName": "search",
+    "input": "glass scrolls",
+    "output": null,
+    "durationMs": 0
+  },
+  {
+    "ts": 1754690003167,
+    "type": "toolResult",
+    "stepId": "step-2",
+    "toolName": "search",
+    "input": "glass scrolls",
+    "output": {
+      "hits": [
+        "Result for glass scrolls"
+      ]
+    },
+    "durationMs": 0
+  },
+  {
+    "ts": 1754690003167,
+    "type": "toolCall",
+    "stepId": "step-3",
+    "toolName": "summarize",
+    "input": "This is a short text to summarize.",
+    "output": null,
+    "durationMs": 0
+  },
+  {
+    "ts": 1754690003167,
+    "type": "toolResult",
+    "stepId": "step-3",
+    "toolName": "summarize",
+    "input": "This is a short text to summarize.",
+    "output": "Summary: This is a short text to summarize.",
+    "durationMs": 0
+  }
+]
