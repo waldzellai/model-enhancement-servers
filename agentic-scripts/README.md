@@ -9,6 +9,7 @@ This directory contains the glassBead Agentic Script Enhancement System, specifi
 - **adas-meta-agent** (`evolution`) - Advanced evolution capabilities
 - **intelligent-debugger** (`dev-tools`) - Advanced dev tools capabilities
 - **memory-manager** (`memory`) - Advanced memory capabilities
+- **process-workflows** (`workflows`) - Structured improvement frameworks (Stage-Gate, DMAIC, PDCA, A3, OODA, Build-Measure-Learn, Double Diamond, Gamified Learning)
 
 ## 🏰 Waldzell AI Integration
 
@@ -38,6 +39,9 @@ chmod +x agentic-scripts/**/*.sh
 
 # Intelligent debugging
 ./agentic-scripts/dev-tools/intelligent-debugger.sh --live
+
+# Run a process workflow
+./agentic-scripts/workflows/stage-gate.sh
 ```
 
 ## 🌐 Collective Intelligence
