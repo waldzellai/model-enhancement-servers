@@ -136,7 +136,7 @@ async function main() {
                     {
                         label: 'Runs',
                         backgroundColor: ['#36a2eb', '#ff6384'],
-                        data: [runSummary.successCount, Math.max(runSummary.failureCount, runSummary.totalRuns - runSummary.successCount)],
+                        data: [runSummary.successCount, runSummary.failureCount],
                     },
                 ],
             },
