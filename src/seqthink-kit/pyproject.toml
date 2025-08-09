@@ -1,0 +1,13 @@
+[project]
+name = "seqthink_kit"
+version = "0.1.0"
+description = "Sequential thinking MCP server with thought tracking"
+authors = [{name = "Model Enhancement Team"}]
+requires-python = ">=3.10"
+dependencies = [
+    "fastmcp>=2.11",
+]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
