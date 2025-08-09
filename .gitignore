@@ -9,3 +9,5 @@ update-dockerfiles.sh
 update-packages.sh
 
 node_modules/
+__pycache__/
+*.pyc
