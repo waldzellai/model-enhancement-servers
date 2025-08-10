@@ -48,6 +48,6 @@ steps:
       runs:
         - label: baseline
           params: { p: 0.03, q: 0.38, M: 10000 }
-          series: $ref: baseline-run.series
+          series: "$ref:baseline-run.series"
       memoTemplatePath: demos/bass/memo.template.md
       outDir: demos/bass/out

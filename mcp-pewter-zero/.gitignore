@@ -3,3 +3,9 @@ dist/
 .env
 .wins/
 demos/bass/out/
+
+# Log files
+*.log
+
+# Python cache files
+*.pyc
