@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["ranking"],
+  "properties": {
+    "ranking": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["param", "importance"],
+        "properties": {
+          "param": { "type": "string" },
+          "importance": { "type": "number" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,24 @@
+{
+  "name": "mcp-pewter-zero",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx src/server.ts",
+    "demo:bass": "bash scripts/demo.bash",
+    "test": "node --test --import=tsx --test-reporter spec \"tests/**/*.test.ts\""
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "eta": "^3.5.0",
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.30",
+    "tsx": "^4.9.3",
+    "typescript": "^5.4.5"
+  }
+}

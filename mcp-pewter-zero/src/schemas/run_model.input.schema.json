@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["spec", "params"],
+  "properties": {
+    "spec": {
+      "type": "object",
+      "required": ["kind", "entry", "variables", "dt", "t_end"],
+      "properties": {
+        "kind": { "enum": ["python", "xmile"] },
+        "entry": { "type": "string" },
+        "variables": { "type": "array", "items": { "type": "string" } },
+        "dt": { "type": "number" },
+        "t_end": { "type": "number" }
+      },
+      "additionalProperties": false
+    },
+    "params": {
+      "type": "object",
+      "additionalProperties": { "type": "number" }
+    },
+    "seed": { "type": "number" }
+  },
+  "additionalProperties": false
+}
