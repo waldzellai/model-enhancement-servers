@@ -299,6 +299,7 @@ class AnalogicalReasoningServer {
             limitations ? `Limitations:\n${limitations}` : undefined,
         ].filter(Boolean).join('\n');
     }
+
     async processAnalogicalReasoning(input) {
         try {
             const validatedInput = this.validateAnalogicalReasoningData(input);
@@ -309,8 +310,6 @@ class AnalogicalReasoningServer {
             console.error(visualization);
             let samplingSummary;
             try {
-                // Fallback local summary instead of calling a non-existent server method.
-                samplingSummary = this.createLocalSamplingSummary(validatedInput);
             }
             catch (e) {
                 console.error("Sampling failed", e);

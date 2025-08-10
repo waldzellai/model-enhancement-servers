@@ -1,0 +1,43 @@
+{
+  "name": "@waldzellai/ethical-reasoning",
+  "version": "0.1.0",
+  "description": "MCP server for structured ethical reasoning across multiple frameworks",
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/waldzellai/model-enhancement-servers.git",
+    "directory": "src/ethical-reasoning"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://github.com/waldzellai/model-enhancement-servers/tree/main/src/ethical-reasoning",
+  "author": "glassBead",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "ethics",
+    "model-enhancement"
+  ],
+  "bin": {
+    "mcp-server-ethical-reasoning": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc && shx chmod +x dist/*.js",
+    "prepare": "npm run build",
+    "watch": "tsc --watch"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.10.2",
+    "chalk": "^5.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "shx": "^0.3.4",
+    "typescript": "^5.3.3"
+  }
+}
