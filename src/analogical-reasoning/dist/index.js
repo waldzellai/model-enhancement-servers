@@ -1,21 +1,19 @@
 #!/usr/bin/env node
-import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
+import { z } from "zod";
 import chalk from 'chalk';
+// Define session configuration schema (optional - this server doesn't need config)
+export const configSchema = z.object({});
 // Type guard for DomainElement type
 const allowedElementTypes = ["entity", "attribute", "relation", "process"];
 function isValidElementType(type) {
     return typeof type === 'string' && allowedElementTypes.includes(type);
 }
 class AnalogicalReasoningServer {
-    server;
     analogyHistory = {};
     domainRegistry = {};
     nextElementId = 1;
-    constructor(server) {
-        this.server = server;
-    }
     validateAnalogicalReasoningData(input) {
         const data = input;
         // Validate required fields
@@ -110,19 +108,81 @@ class AnalogicalReasoningServer {
                 if (!mapping.justification || typeof mapping.justification !== 'string') {
                     throw new Error('Invalid mapping justification: must be a string');
                 }
+                const limitations = [];
+                if (mapping.limitations && Array.isArray(mapping.limitations)) {
+                    for (const limitation of mapping.limitations) {
+                        if (typeof limitation === 'string') {
+                            limitations.push(limitation);
+                        }
+                    }
+                }
                 const mappingData = {
                     sourceElement: mapping.sourceElement,
                     targetElement: mapping.targetElement,
                     mappingStrength: mapping.mappingStrength,
                     justification: mapping.justification,
+                    // limitations is added conditionally below
                 };
-                if (Array.isArray(mapping.limitations) && mapping.limitations.length > 0) {
-                    mappingData.limitations = mapping.limitations;
+                if (limitations.length > 0) {
+                    mappingData.limitations = limitations;
                 }
                 mappings.push(mappingData);
             }
         }
-        const validated = {
+        // Validate arrays
+        const strengths = [];
+        if (Array.isArray(data.strengths)) {
+            for (const strength of data.strengths) {
+                if (typeof strength === 'string') {
+                    strengths.push(strength);
+                }
+            }
+        }
+        const limitations = [];
+        if (Array.isArray(data.limitations)) {
+            for (const limitation of data.limitations) {
+                if (typeof limitation === 'string') {
+                    limitations.push(limitation);
+                }
+            }
+        }
+        const inferences = [];
+        if (Array.isArray(data.inferences)) {
+            for (const inference of data.inferences) {
+                if (!inference.statement || typeof inference.statement !== 'string') {
+                    throw new Error('Invalid inference statement: must be a string');
+                }
+                if (typeof inference.confidence !== 'number' || inference.confidence < 0 || inference.confidence > 1) {
+                    throw new Error('Invalid inference confidence: must be a number between 0 and 1');
+                }
+                if (!Array.isArray(inference.basedOnMappings)) {
+                    throw new Error('Invalid inference basedOnMappings: must be an array of mapping IDs');
+                }
+                const basedOnMappings = [];
+                for (const mappingId of inference.basedOnMappings) {
+                    if (typeof mappingId === 'string') {
+                        basedOnMappings.push(mappingId);
+                    }
+                }
+                inferences.push({
+                    statement: inference.statement,
+                    confidence: inference.confidence,
+                    basedOnMappings
+                });
+            }
+        }
+        const suggestedOperations = [];
+        if (Array.isArray(data.suggestedOperations)) {
+            for (const operation of data.suggestedOperations) {
+                if (typeof operation === 'string' && [
+                    'add-mapping', 'revise-mapping', 'draw-inference', 'evaluate-limitation', 'try-new-source'
+                ].includes(operation)) {
+                    suggestedOperations.push(operation);
+                }
+            }
+        }
+        // Create validated data object with conditional suggestedOperations
+        const validatedData = {
             sourceDomain: {
                 name: sourceDomain.name,
                 elements: sourceElements
@@ -136,31 +196,22 @@ class AnalogicalReasoningServer {
             purpose: data.purpose,
             confidence: data.confidence,
             iteration: data.iteration,
-            strengths: Array.isArray(data.strengths) ? data.strengths : [],
-            limitations: Array.isArray(data.limitations) ? data.limitations : [],
-            inferences: Array.isArray(data.inferences) ? data.inferences.map(inf => ({
-                statement: String(inf.statement ?? ''),
-                confidence: Number(inf.confidence ?? 0),
-                basedOnMappings: Array.isArray(inf.basedOnMappings) ? inf.basedOnMappings : []
-            })) : [],
+            strengths,
+            limitations,
+            inferences,
             nextOperationNeeded: data.nextOperationNeeded,
+            // suggestedOperations is added conditionally below
         };
-        if (Array.isArray(data.suggestedOperations)) {
-            validated.suggestedOperations = data.suggestedOperations;
+        if (suggestedOperations.length > 0) {
+            validatedData.suggestedOperations = suggestedOperations;
         }
-        return validated;
+        return validatedData;
     }
     updateDomainRegistry(domain) {
-        if (!this.domainRegistry[domain.name]) {
-            this.domainRegistry[domain.name] = { name: domain.name, elements: [] };
-        }
-        const existing = this.domainRegistry[domain.name];
-        const existingIds = new Set(existing.elements.map(e => e.id));
-        for (const element of domain.elements) {
-            if (!existingIds.has(element.id)) {
-                existing.elements.push(element);
-            }
-        }
+        this.domainRegistry[domain.name] = {
+            name: domain.name,
+            elements: [...domain.elements]
+        };
     }
     updateAnalogicalReasoning(data) {
         let historyEntry = this.analogyHistory[data.analogyId]; // Get potential entry
@@ -243,7 +294,7 @@ class AnalogicalReasoningServer {
         if (data.inferences.length > 0) {
             output += `${chalk.bold('INFERENCES:')}\n`;
             for (const inference of data.inferences) {
-                const confidenceIndicator = inference.confidence >= 0.7 ? '' : '?';
+                const confidenceIndicator = inference.confidence >= 0.7 ? '' : '?';
                 output += `  ${confidenceIndicator} ${inference.statement}\n`;
                 output += `    ${chalk.dim(`Confidence: ${(inference.confidence * 100).toFixed(0)}%`)}\n`;
                 output += '\n';
@@ -270,37 +321,16 @@ class AnalogicalReasoningServer {
             const operations = data.suggestedOperations || [];
             if (operations.length > 0) {
                 for (const operation of operations) {
-                    output += `   ${operation}\n`;
+                    output += `   ${operation}\n`;
                 }
             }
             else {
-                output += `   Continue refining the analogy\n`;
+                output += `   Continue refining the analogy\n`;
             }
         }
         return output;
     }
-    createLocalSamplingSummary(data) {
-        const totalMappings = data.mappings.length;
-        const strongMappings = data.mappings.filter(m => m.mappingStrength >= 0.8).length;
-        const moderateMappings = data.mappings.filter(m => m.mappingStrength >= 0.5 && m.mappingStrength < 0.8).length;
-        const weakMappings = totalMappings - strongMappings - moderateMappings;
-        const topInferences = [...data.inferences]
-            .sort((a, b) => b.confidence - a.confidence)
-            .slice(0, 3)
-            .map(inf => `- ${inf.statement} (${Math.round(inf.confidence * 100)}%)`)
-            .join('\n');
-        const strengths = (data.strengths || []).slice(0, 2).map(s => `+ ${s}`).join('\n');
-        const limitations = (data.limitations || []).slice(0, 2).map(l => `- ${l}`).join('\n');
-        return [
-            `Analogy ${data.sourceDomain.name} → ${data.targetDomain.name} (id: ${data.analogyId}).`,
-            `Mappings: ${totalMappings} (strong: ${strongMappings}, moderate: ${moderateMappings}, weak: ${weakMappings}).`,
-            topInferences ? `Top inferences:\n${topInferences}` : undefined,
-            strengths ? `Strengths:\n${strengths}` : undefined,
-            limitations ? `Limitations:\n${limitations}` : undefined,
-        ].filter(Boolean).join('\n');
-    }
-
-    async processAnalogicalReasoning(input) {
+    processAnalogicalReasoning(input) {
         try {
             const validatedInput = this.validateAnalogicalReasoningData(input);
             // Update analogy state
@@ -308,12 +338,6 @@ class AnalogicalReasoningServer {
             // Generate visualization
             const visualization = this.visualizeMapping(validatedInput);
             console.error(visualization);
-            let samplingSummary;
-            try {
-            }
-            catch (e) {
-                console.error("Sampling failed", e);
-            }
             // Return the analysis result
             return {
                 content: [{
@@ -327,8 +351,7 @@ class AnalogicalReasoningServer {
                             mappingCount: validatedInput.mappings.length,
                             inferenceCount: validatedInput.inferences.length,
                             nextOperationNeeded: validatedInput.nextOperationNeeded,
-                            suggestedOperations: validatedInput.suggestedOperations,
-                            samplingSummary
+                            suggestedOperations: validatedInput.suggestedOperations
                         }, null, 2)
                     }]
             };
@@ -347,116 +370,91 @@ class AnalogicalReasoningServer {
         }
     }
 }
-// Create an MCP server
-const server = new Server({
-    name: "analogical-reasoning",
-    version: "0.1.3",
-}, {
-    capabilities: {
-        tools: {},
-    },
+// Tool input schema using Zod
+const analogicalReasoningInputSchema = z.object({
+    sourceDomain: z.object({
+        name: z.string().describe("Name of the source domain"),
+        elements: z.array(z.object({
+            id: z.string().optional(),
+            name: z.string(),
+            type: z.enum(["entity", "attribute", "relation", "process"]),
+            description: z.string()
+        }))
+    }),
+    targetDomain: z.object({
+        name: z.string().describe("Name of the target domain"),
+        elements: z.array(z.object({
+            id: z.string().optional(),
+            name: z.string(),
+            type: z.enum(["entity", "attribute", "relation", "process"]),
+            description: z.string()
+        }))
+    }),
+    mappings: z.array(z.object({
+        sourceElement: z.string(),
+        targetElement: z.string(),
+        mappingStrength: z.number().min(0).max(1),
+        justification: z.string(),
+        limitations: z.array(z.string()).optional()
+    })),
+    analogyId: z.string(),
+    purpose: z.enum(["explanation", "prediction", "problem-solving", "creative-generation"]),
+    confidence: z.number().min(0).max(1),
+    iteration: z.number().int().min(0),
+    strengths: z.array(z.string()),
+    limitations: z.array(z.string()),
+    inferences: z.array(z.object({
+        statement: z.string(),
+        confidence: z.number().min(0).max(1),
+        basedOnMappings: z.array(z.string())
+    })),
+    nextOperationNeeded: z.boolean(),
+    suggestedOperations: z.array(z.enum(["add-mapping", "revise-mapping", "draw-inference", "evaluate-limitation", "try-new-source"])).optional()
 });
-// Tool list handler
-server.setRequestHandler(ListToolsRequestSchema, async () => {
-    const tools = [
-        {
-            name: "analogicalReasoning",
-            description: "Analyze and visualize analogical mappings between domains.",
-            inputSchema: {
-                type: "object",
-                properties: {
-                    sourceDomain: {
-                        type: "object",
-                        properties: {
-                            name: { type: "string" },
-                            elements: {
-                                type: "array",
-                                items: {
-                                    type: "object",
-                                    properties: {
-                                        id: { type: "string" },
-                                        name: { type: "string" },
-                                        type: { type: "string", enum: ["entity", "attribute", "relation", "process"] },
-                                        description: { type: "string" }
-                                    },
-                                    required: ["name", "type", "description"]
-                                }
-                            }
-                        },
-                        required: ["name", "elements"]
-                    },
-                    targetDomain: {
-                        type: "object",
-                        properties: {
-                            name: { type: "string" },
-                            elements: {
-                                type: "array",
-                                items: {
-                                    type: "object",
-                                    properties: {
-                                        id: { type: "string" },
-                                        name: { type: "string" },
-                                        type: { type: "string", enum: ["entity", "attribute", "relation", "process"] },
-                                        description: { type: "string" }
-                                    },
-                                    required: ["name", "type", "description"]
-                                }
-                            }
-                        },
-                        required: ["name", "elements"]
-                    },
-                    mappings: {
-                        type: "array",
-                        items: {
-                            type: "object",
-                            properties: {
-                                sourceElement: { type: "string" },
-                                targetElement: { type: "string" },
-                                mappingStrength: { type: "number", minimum: 0, maximum: 1 },
-                                justification: { type: "string" },
-                                limitations: { type: "array", items: { type: "string" } }
-                            },
-                            required: ["sourceElement", "targetElement", "mappingStrength", "justification"]
-                        }
-                    },
-                    analogyId: { type: "string" },
-                    purpose: { type: "string", enum: ["explanation", "prediction", "problem-solving", "creative-generation"] },
-                    confidence: { type: "number", minimum: 0, maximum: 1 },
-                    iteration: { type: "number", minimum: 0 },
-                    strengths: { type: "array", items: { type: "string" } },
-                    limitations: { type: "array", items: { type: "string" } },
-                    inferences: {
-                        type: "array",
-                        items: {
-                            type: "object",
-                            properties: {
-                                statement: { type: "string" },
-                                confidence: { type: "number", minimum: 0, maximum: 1 },
-                                basedOnMappings: { type: "array", items: { type: "string" } }
-                            },
-                            required: ["statement", "confidence", "basedOnMappings"]
-                        }
-                    },
-                    nextOperationNeeded: { type: "boolean" },
-                    suggestedOperations: { type: "array", items: { type: "string", enum: ["add-mapping", "revise-mapping", "draw-inference", "evaluate-limitation", "try-new-source"] } }
-                },
-                required: ["sourceDomain", "targetDomain", "mappings", "analogyId", "purpose", "confidence", "iteration", "nextOperationNeeded"]
-            }
-        }
-    ];
-    return {
-        tools,
-    };
-});
-const analogicalReasoningServer = new AnalogicalReasoningServer(server);
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
-    if (request.params.name === "analogicalReasoning") {
-        return await analogicalReasoningServer.processAnalogicalReasoning(request.params.arguments);
-    }
-    return {
-        content: [{ type: "text", text: "Unknown tool" }]
-    };
-});
-const transport = new StdioServerTransport();
-await server.connect(transport);
+// Export createServer function for Smithery CLI
+export default function createServer({ config, }) {
+    const server = new McpServer({
+        name: "analogical-reasoning-server",
+        version: "0.1.3",
+    });
+    const analogicalReasoningServer = new AnalogicalReasoningServer();
+    // Register the analogical reasoning tool
+    server.registerTool("analogicalReasoning", {
+        title: "Analogical Reasoning",
+        description: `A detailed tool for analogical thinking between source and target domains.
+This tool helps models structure analogies systematically to improve understanding and reasoning.
+It facilitates explicit mapping between domains, inference generation, and analogy evaluation.
+
+Use this tool to:
+- Map concepts between familiar and unfamiliar domains
+- Draw insights through structural alignment
+- Generate predictions based on analogical transfer
+- Solve problems by applying known solutions to new contexts`,
+        inputSchema: {
+            data: analogicalReasoningInputSchema
+        },
+    }, async ({ data }) => {
+        // Validate and process the input
+        const result = await analogicalReasoningServer.processAnalogicalReasoning(data);
+        return result;
+    });
+    return server.server;
+}
+// Maintain STDIO compatibility for backward compatibility
+async function main() {
+    // Create server with empty configuration (no config needed for this server)
+    const server = createServer({
+        config: {},
+    });
+    const transport = new StdioServerTransport();
+    await server.connect(transport);
+    console.error("Analogical Reasoning MCP Server running in stdio mode");
+}
+// Only run main if this file is executed directly (not imported)
+if (import.meta.url === `file://${process.argv[1]}`) {
+    main().catch((error) => {
+        console.error("Fatal error running server:", error);
+        process.exit(1);
+    });
+}
 //# sourceMappingURL=index.js.map
