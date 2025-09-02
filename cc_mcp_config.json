@@ -1,0 +1,87 @@
+{
+  "mcpServers": {
+    "exa-mcp-server": {
+      "command": "node",
+      "args": [
+        "/Users/b.c.nims/glassBead-MASTER/Exa/market-insights/exa-mcp-server/.smithery/index.cjs"
+      ],
+      "env": {
+        "EXA_API_KEY": "04d84ad6-726b-450d-9274-4050b08ab052"
+      },
+      "autoApprove": [
+        "web_search_exa",
+        "deep_researcher_start",
+        "deep_researcher_check",
+        "linkedin_search_exa",
+        "crawling_exa",
+        "company_research_exa"
+      ]
+    },
+    "firecrawl-mcp-server": {
+      "command": "node",
+      "args": [
+        "/Users/b.c.nims/glassBead-MASTER/Exa/market-insights/firecrawl-mcp-server/dist/index.js"
+      ],
+      "env": {
+        "FIRECRAWL_API_KEY": "fc-dc828ca1c1af4897adcb3f3c42ff01d9"
+      },
+      "autoApprove": [
+        "firecrawl_search",
+        "firecrawl_scrape",
+        "firecrawl_map",
+        "firecrawl_crawl",
+        "firecrawl_check_crawl_status",
+        "firecrawl_deep_research",
+        "firecrawl_generate_llmstxt"
+      ]
+    },
+    "context7-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@smithery/cli@latest",
+        "run",
+        "@upstash/context7-mcp",
+        "--key",
+        "fe556de3-a658-4330-a3e7-563cf6a91972"
+      ],
+      "autoApprove": [
+        "resolve-library-id",
+        "get-library-docs"
+      ]
+    },
+    "smart-e2b": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@smithery/cli@latest",
+        "run",
+        "@Leghis/smart-e2b",
+        "--key",
+        "fe556de3-a658-4330-a3e7-563cf6a91972",
+        "--profile",
+        "operational-bedbug-smw1eB"
+      ],
+      "autoApprove": [
+        "executeJavaScript",
+        "executePython",
+        "uploadFile",
+        "listFiles",
+        "readFile"
+      ]
+    },
+    "mem0-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@smithery/cli@latest",
+        "run",
+        "@big-omega/mem0-mcp",
+        "--key",
+        "fe556de3-a658-4330-a3e7-563cf6a91972",
+        "--profile",
+        "operational-bedbug-smw1eB"
+      ]
+    }
+  }
+}

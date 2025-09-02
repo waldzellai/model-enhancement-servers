@@ -1,14 +1,16 @@
-#!/usr/bin/env node
-
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
-  Tool,
-  CallToolRequest
+  McpError,
+  ErrorCode
 } from "@modelcontextprotocol/sdk/types.js";
+import { z } from "zod";
+import { zodToJsonSchema } from "zod-to-json-schema";
 import chalk from 'chalk';
+
+// Define session configuration schema (optional - this server doesn't need config)
+export const configSchema = z.object({});
 
 // Types
 interface DomainElement {
@@ -454,7 +456,7 @@ class AnalogicalReasoningServer {
     return output;
   }
 
-  public processAnalogicalReasoning(input: unknown): { content: Array<{ type: string; text: string }>; isError?: boolean } {
+  public processAnalogicalReasoning(input: unknown): { content: Array<{ type: "text"; text: string }>; isError?: boolean } {
     try {
       const validatedInput = this.validateAnalogicalReasoningData(input);
       
@@ -468,7 +470,7 @@ class AnalogicalReasoningServer {
       // Return the analysis result
       return {
         content: [{
-          type: "text",
+          type: "text" as const,
           text: JSON.stringify({
             analogyId: validatedInput.analogyId,
             purpose: validatedInput.purpose,
@@ -485,7 +487,7 @@ class AnalogicalReasoningServer {
     } catch (error) {
       return {
         content: [{
-          type: "text",
+          type: "text" as const,
           text: JSON.stringify({
             error: error instanceof Error ? error.message : String(error),
             status: 'failed'
@@ -497,257 +499,109 @@ class AnalogicalReasoningServer {
   }
 }
 
-const ANALOGICAL_REASONING_TOOL: Tool = {
-  name: "analogicalReasoning",
-  description: `A detailed tool for analogical thinking between source and target domains.
+// Tool input schema using Zod
+const AnalogicalReasoningSchema = z.object({
+  sourceDomain: z.object({
+    name: z.string(),
+    elements: z.array(z.object({
+      id: z.string().optional(),
+      name: z.string(),
+      type: z.enum(["entity", "attribute", "relation", "process"]),
+      description: z.string()
+    }))
+  }),
+  targetDomain: z.object({
+    name: z.string(),
+    elements: z.array(z.object({
+      id: z.string().optional(),
+      name: z.string(),
+      type: z.enum(["entity", "attribute", "relation", "process"]),
+      description: z.string()
+    }))
+  }),
+  mappings: z.array(z.object({
+    sourceElement: z.string(),
+    targetElement: z.string(),
+    mappingStrength: z.number().min(0).max(1),
+    justification: z.string(),
+    limitations: z.array(z.string()).optional()
+  })),
+  analogyId: z.string(),
+  purpose: z.enum(["explanation", "prediction", "problem-solving", "creative-generation"]),
+  confidence: z.number().min(0).max(1),
+  iteration: z.number().int().min(0),
+  strengths: z.array(z.string()),
+  limitations: z.array(z.string()),
+  inferences: z.array(z.object({
+    statement: z.string(),
+    confidence: z.number().min(0).max(1),
+    basedOnMappings: z.array(z.string())
+  })),
+  nextOperationNeeded: z.boolean(),
+  suggestedOperations: z.array(
+    z.enum(["add-mapping", "revise-mapping", "draw-inference", "evaluate-limitation", "try-new-source"])
+  ).optional()
+});
+
+// Export createServer function for Smithery CLI
+export default function createServer({
+  config,
+}: {
+  config: z.infer<typeof configSchema>;
+}): Server {
+  // Create a low-level Server instance
+  const server = new Server(
+    {
+      name: "analogical-reasoning-server",
+      version: "0.1.3",
+    },
+    {
+      capabilities: {
+        tools: {},
+      },
+    }
+  );
+
+  const analogicalReasoningServer = new AnalogicalReasoningServer();
+
+  // Register handlers
+  server.setRequestHandler(ListToolsRequestSchema, async () => ({
+    tools: [
+      {
+        name: "analogicalReasoning",
+        title: "Analogical Reasoning",
+        description: `A detailed tool for analogical thinking between source and target domains.
 This tool helps models structure analogies systematically to improve understanding and reasoning.
 It facilitates explicit mapping between domains, inference generation, and analogy evaluation.
 
-When to use this tool:
-- Understanding new concepts through analogies to familiar domains
-- Problem-solving by transferring insights between domains
-- Creative thinking by establishing connections between different fields
-- Explaining complex concepts through structured comparisons
-- Evaluating analogies for their strengths and limitations
+Use this tool to:
+- Map concepts between familiar and unfamiliar domains
+- Draw insights through structural alignment
+- Generate predictions based on analogical transfer
+- Solve problems by applying known solutions to new contexts`,
+        inputSchema: zodToJsonSchema(AnalogicalReasoningSchema) as any,
+      },
+    ],
+  }));
 
-Key features:
-- Explicit domain structure representation
-- Systematic mapping between domains
-- Inference generation and evaluation
-- Visual representation of analogical mappings
-- Tracking of analogy strengths and limitations`,
+  server.setRequestHandler(CallToolRequestSchema, async (request) => {
+    const { name, arguments: toolArgs } = request.params;
 
-  inputSchema: {
-    type: "object",
-    properties: {
-      sourceDomain: {
-        type: "object",
-        description: "The familiar domain used as the basis for the analogy",
-        properties: {
-          name: {
-            type: "string",
-            description: "The name of the source domain"
-          },
-          elements: {
-            type: "array",
-            description: "Elements in the source domain",
-            items: {
-              type: "object",
-              properties: {
-                id: {
-                  type: "string",
-                  description: "Unique identifier for the element"
-                },
-                name: {
-                  type: "string",
-                  description: "Name of the element"
-                },
-                type: {
-                  type: "string",
-                  enum: ["entity", "attribute", "relation", "process"],
-                  description: "Type of element"
-                },
-                description: {
-                  type: "string",
-                  description: "Description of the element"
-                }
-              },
-              required: ["name", "type", "description"]
-            }
-          }
-        },
-        required: ["name", "elements"]
-      },
-      targetDomain: {
-        type: "object",
-        description: "The domain being understood through the analogy",
-        properties: {
-          name: {
-            type: "string",
-            description: "The name of the target domain"
-          },
-          elements: {
-            type: "array",
-            description: "Elements in the target domain",
-            items: {
-              type: "object",
-              properties: {
-                id: {
-                  type: "string",
-                  description: "Unique identifier for the element"
-                },
-                name: {
-                  type: "string",
-                  description: "Name of the element"
-                },
-                type: {
-                  type: "string",
-                  enum: ["entity", "attribute", "relation", "process"],
-                  description: "Type of element"
-                },
-                description: {
-                  type: "string",
-                  description: "Description of the element"
-                }
-              },
-              required: ["name", "type", "description"]
-            }
-          }
-        },
-        required: ["name", "elements"]
-      },
-      mappings: {
-        type: "array",
-        description: "Mappings between source and target domain elements",
-        items: {
-          type: "object",
-          properties: {
-            sourceElement: {
-              type: "string",
-              description: "ID of the source domain element"
-            },
-            targetElement: {
-              type: "string",
-              description: "ID of the target domain element"
-            },
-            mappingStrength: {
-              type: "number",
-              minimum: 0,
-              maximum: 1,
-              description: "Strength of the mapping (0.0-1.0)"
-            },
-            justification: {
-              type: "string",
-              description: "Justification for the mapping"
-            },
-            limitations: {
-              type: "array",
-              description: "Limitations of this specific mapping",
-              items: {
-                type: "string"
-              }
-            }
-          },
-          required: ["sourceElement", "targetElement", "mappingStrength", "justification"]
-        }
-      },
-      analogyId: {
-        type: "string",
-        description: "Unique identifier for this analogy"
-      },
-      purpose: {
-        type: "string",
-        enum: ["explanation", "prediction", "problem-solving", "creative-generation"],
-        description: "The purpose of the analogy"
-      },
-      confidence: {
-        type: "number",
-        minimum: 0,
-        maximum: 1,
-        description: "Confidence in the overall analogy (0.0-1.0)"
-      },
-      iteration: {
-        type: "number",
-        minimum: 0,
-        description: "Current iteration of the analogy"
-      },
-      strengths: {
-        type: "array",
-        description: "Strengths of the analogy",
-        items: {
-          type: "string"
-        }
-      },
-      limitations: {
-        type: "array",
-        description: "Limitations of the analogy",
-        items: {
-          type: "string"
-        }
-      },
-      inferences: {
-        type: "array",
-        description: "Inferences drawn from the analogy",
-        items: {
-          type: "object",
-          properties: {
-            statement: {
-              type: "string",
-              description: "The inference statement"
-            },
-            confidence: {
-              type: "number",
-              minimum: 0,
-              maximum: 1,
-              description: "Confidence in the inference (0.0-1.0)"
-            },
-            basedOnMappings: {
-              type: "array",
-              description: "IDs of mappings supporting this inference",
-              items: {
-                type: "string"
-              }
-            }
-          },
-          required: ["statement", "confidence", "basedOnMappings"]
-        }
-      },
-      nextOperationNeeded: {
-        type: "boolean",
-        description: "Whether another operation is needed"
-      },
-      suggestedOperations: {
-        type: "array",
-        description: "Suggested next operations",
-        items: {
-          type: "string",
-          enum: ["add-mapping", "revise-mapping", "draw-inference", "evaluate-limitation", "try-new-source"]
-        }
+    if (name === "analogicalReasoning") {
+      const parsed = AnalogicalReasoningSchema.safeParse(toolArgs);
+      if (!parsed.success) {
+        throw new McpError(
+          ErrorCode.InvalidParams,
+          `Invalid arguments: ${parsed.error.message}`
+        );
       }
-    },
-    required: ["sourceDomain", "targetDomain", "analogyId", "purpose", "confidence", "iteration", "nextOperationNeeded"]
-  }
-};
 
-const server = new Server(
-  {
-    name: "analogical-reasoning-server",
-    version: "0.1.2",
-  },
-  {
-    capabilities: {
-      tools: {},
-    },
-  }
-);
+      const result = await analogicalReasoningServer.processAnalogicalReasoning(parsed.data);
+      return result;
+    }
 
-const analogicalReasoningServer = new AnalogicalReasoningServer();
+    throw new McpError(ErrorCode.InvalidParams, `Unknown tool: ${name}`);
+  });
 
-server.setRequestHandler(ListToolsRequestSchema, async () => ({
-  tools: [ANALOGICAL_REASONING_TOOL],
-}));
-
-server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest) => {
-  if (request.params.name === "analogicalReasoning") {
-    return analogicalReasoningServer.processAnalogicalReasoning(request.params.arguments);
-  }
-
-  return {
-    content: [{
-      type: "text",
-      text: `Unknown tool: ${request.params.name}`
-    }],
-    isError: true
-  };
-});
-
-async function runServer() {
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-  console.error("Analogical Reasoning MCP Server running on stdio");
+  return server;
 }
-
-runServer().catch((error) => {
-  console.error("Fatal error running server:", error);
-  process.exit(1);
-});

@@ -77,13 +77,6 @@ Replace entire file with TypeScript runtime:
 runtime: "typescript"
 ```
 
-Or with optional environment variables:
-```yaml
-runtime: "typescript"
-env:
-  NODE_ENV: "production"
-```
-
 ## Project Structure After Migration
 
 ```
