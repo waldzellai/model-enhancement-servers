@@ -1,14 +1,2 @@
-build:
-  dockerBuildPath: ../
-  dockerfile: mcp-pewter-zero/Dockerfile
-startCommand:
-  type: stdio
-  configSchema:
-    type: object
-    properties: {}
-  commandFunction: |
-    (config) => ({
-      command: 'node',
-      args: ['dist/server.js'],
-      env: {}
-    })
+runtime: typescript
+entrypoint: src/server.ts

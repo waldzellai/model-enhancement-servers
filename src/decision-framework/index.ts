@@ -1,13 +1,16 @@
-#!/usr/bin/env node
-
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
-  Tool,
+  McpError,
+  ErrorCode
 } from "@modelcontextprotocol/sdk/types.js";
+import { z } from "zod";
+import { zodToJsonSchema } from "zod-to-json-schema";
 import chalk from 'chalk';
+
+// Define session configuration schema (optional - this server doesn't need config)
+export const configSchema = z.object({});
 
 // Types
 interface Option {
@@ -691,26 +694,58 @@ class DecisionFrameworkServer {
   }
 }
 
-const DECISION_FRAMEWORK_TOOL: Tool = {
-  name: "decisionFramework",
-  description: `A detailed tool for structured decision analysis and rational choice.
-This tool helps models systematically evaluate options, criteria, and outcomes.
-It supports multiple decision frameworks, probability estimates, and value judgments.
+// Tool input schema using Zod
+const DecisionFrameworkSchema = z.object({
+  decisionStatement: z.string(),
+  options: z.array(z.object({
+    id: z.string().optional(),
+    name: z.string(),
+    description: z.string()
+  })),
+  criteria: z.array(z.object({
+    id: z.string().optional(),
+    name: z.string(),
+    description: z.string(),
+    weight: z.number().min(0).max(1),
+    evaluationMethod: z.enum(["quantitative", "qualitative", "boolean"])
+  })).optional(),
+  criteriaEvaluations: z.array(z.object({
+    criterionId: z.string(),
+    optionId: z.string(),
+    score: z.number().min(0).max(1),
+    justification: z.string()
+  })).optional(),
+  possibleOutcomes: z.array(z.object({
+    id: z.string().optional(),
+    description: z.string(),
+    probability: z.number().min(0).max(1),
+    optionId: z.string(),
+    value: z.number(),
+    confidenceInEstimate: z.number().min(0).max(1)
+  })).optional(),
+  informationGaps: z.array(z.object({
+    description: z.string(),
+    impact: z.number().min(0).max(1),
+    researchMethod: z.string()
+  })).optional(),
+  stakeholders: z.array(z.string()),
+  constraints: z.array(z.string()),
+  timeHorizon: z.string(),
+  riskTolerance: z.enum(["risk-averse", "risk-neutral", "risk-seeking"]),
+  expectedValues: z.record(z.number()).optional(),
+  multiCriteriaScores: z.record(z.number()).optional(),
+  sensitivityInsights: z.array(z.string()).optional(),
+  recommendation: z.string().optional(),
+  decisionId: z.string(),
+  analysisType: z.enum(["expected-utility", "multi-criteria", "maximin", "minimax-regret", "satisficing"]),
+  stage: z.enum(["problem-definition", "options", "criteria", "evaluation", "analysis", "recommendation"]),
+  iteration: z.number().int().min(0),
+  nextStageNeeded: z.boolean(),
+  suggestedNextStage: z.string().optional()
+});
 
-When to use this tool:
-- Complex decisions with multiple options
-- Decisions requiring systematic evaluation of trade-offs
-- Decisions under uncertainty with probability estimates
-- Multi-stakeholder decisions with different criteria
-- Risk analysis and management
-
-Key features:
-- Structured option evaluation
-- Multi-criteria decision analysis
-- Expected utility calculations
-- Information value analysis
-- Visual decision support`,
-
+// Legacy tool schema for backward compatibility
+const LEGACY_DECISION_FRAMEWORK_TOOL = {
   inputSchema: {
     type: "object",
     properties: {
@@ -943,45 +978,65 @@ Key features:
   }
 };
 
-const server = new Server(
-  {
-    name: "decision-framework-server",
-    version: "0.1.2",
-  },
-  {
-    capabilities: {
-      tools: {},
+// Export createServer function for Smithery CLI
+export default function createServer({
+  config,
+}: {
+  config: z.infer<typeof configSchema>;
+}): Server {
+  // Create a low-level Server instance
+  const server = new Server(
+    {
+      name: "decision-framework-server",
+      version: "0.1.3",
     },
-  }
-);
+    {
+      capabilities: {
+        tools: {},
+      },
+    }
+  );
 
-const decisionFrameworkServer = new DecisionFrameworkServer();
+  const decisionFrameworkServer = new DecisionFrameworkServer();
 
-server.setRequestHandler(ListToolsRequestSchema, async () => ({
-  tools: [DECISION_FRAMEWORK_TOOL],
-}));
+  // Register handlers
+  server.setRequestHandler(ListToolsRequestSchema, async () => ({
+    tools: [
+      {
+        name: "decisionFramework",
+        title: "Decision Framework",
+        description: `A detailed tool for structured decision analysis and rational choice.
+This tool helps models systematically evaluate options, criteria, and outcomes.
+It supports multiple decision frameworks, probability estimates, and value judgments.
 
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
-  if (request.params.name === "decisionFramework") {
-    return decisionFrameworkServer.processDecisionAnalysis(request.params.arguments);
-  }
+Use this tool to:
+- Complex decisions with multiple options
+- Decisions requiring systematic evaluation of trade-offs
+- Decisions under uncertainty with probability estimates
+- Multi-stakeholder decisions with different criteria`,
+        inputSchema: zodToJsonSchema(DecisionFrameworkSchema) as any,
+      },
+    ],
+  }));
 
-  return {
-    content: [{
-      type: "text",
-      text: `Unknown tool: ${request.params.name}`
-    }],
-    isError: true
-  };
-});
+  server.setRequestHandler(CallToolRequestSchema, async (request) => {
+    const { name, arguments: toolArgs } = request.params;
 
-async function runServer() {
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-  console.error("Decision Framework MCP Server running on stdio");
+    if (name === "decisionFramework") {
+      const parsed = DecisionFrameworkSchema.safeParse(toolArgs);
+      if (!parsed.success) {
+        throw new McpError(
+          ErrorCode.InvalidParams,
+          `Invalid arguments: ${parsed.error.message}`
+        );
+      }
+
+      const result = await decisionFrameworkServer.processDecisionAnalysis(parsed.data);
+      return result;
+    }
+
+    throw new McpError(ErrorCode.InvalidParams, `Unknown tool: ${name}`);
+  });
+
+  return server;
 }
-
-runServer().catch((error) => {
-  console.error("Fatal error running server:", error);
-  process.exit(1);
-});
