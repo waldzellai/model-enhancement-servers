@@ -1,5 +1,7 @@
 # Metacognitive Monitoring MCP Server
 
+[![smithery badge](https://smithery.ai/badge/@waldzellai/metacognitive-monitoring)](https://smithery.ai/server/@waldzellai/metacognitive-monitoring)
+
 ## Motivation
 
 Language models often struggle with metacognition - the ability to accurately monitor and evaluate their own knowledge, reasoning processes, and confidence. Current models frequently:
