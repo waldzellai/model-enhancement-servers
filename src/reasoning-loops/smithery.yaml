@@ -1,0 +1,64 @@
+name: reasoning-loops
+version: 0.1.0
+description: OODA-structured reasoning loops for systematic verification and analysis
+publisher: waldzellai
+license: MIT
+
+runtime: node
+node:
+  command: node
+  args:
+    - dist/index.js
+
+install:
+  - npm install
+  - npm run build
+
+capabilities:
+  resources: true
+  prompts: true
+  tools: false
+
+resources:
+  - uri: reasoning-loop://docs/verification/fact-checking
+    name: Fact Checking OODA Loop
+    description: OODA loop for systematic claim verification against sources
+  
+  - uri: reasoning-loop://docs/refinement/consistency-check
+    name: Consistency Check OODA Loop
+    description: OODA loop for validating cross-references and consistency
+  
+  - uri: reasoning-loop://docs/verification/bias-scanning
+    name: Bias Scanning OODA Loop
+    description: OODA loop for detecting logical fallacies and loaded language
+  
+  - uri: reasoning-loop://knowledge/fallacy-catalog
+    name: Logical Fallacy Catalog
+    description: Comprehensive catalog of logical fallacies with definitions and examples
+
+prompts:
+  - name: fact-checking
+    title: Fact Checking Loop
+    description: Start a fact-checking OODA loop for systematic claim verification
+  
+  - name: consistency-check
+    title: Consistency Check Loop
+    description: Start a consistency check loop for cross-reference validation
+  
+  - name: bias-scanning
+    title: Bias Scanning Loop
+    description: Start a bias scanning loop for detecting fallacies and loaded language
+
+categories:
+  - reasoning
+  - verification
+  - analysis
+  - cognitive-enhancement
+
+tags:
+  - ooda
+  - reasoning-loops
+  - fact-checking
+  - bias-detection
+  - consistency
+  - logical-fallacies

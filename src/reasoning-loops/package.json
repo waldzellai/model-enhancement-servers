@@ -1,0 +1,34 @@
+{
+  "name": "@waldzellai/reasoning-loops",
+  "version": "0.1.0",
+  "description": "MCP server providing OODA reasoning loops for verification and analysis",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "reasoning-loops": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc && chmod +x dist/index.js",
+    "watch": "tsc --watch"
+  },
+  "keywords": [
+    "mcp",
+    "reasoning",
+    "ooda",
+    "verification",
+    "bias-detection",
+    "fact-checking"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.6.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "typescript": "^5.3.3"
+  },
+  "files": [
+    "dist"
+  ]
+}

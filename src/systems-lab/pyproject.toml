@@ -6,7 +6,20 @@ authors = [{name = "Model Enhancement Team"}]
 requires-python = ">=3.10"
 dependencies = [
     "fastmcp>=2.11",
-    "ortools>=9.0"
+    "ortools>=9.0",
+    "pysd>=3.14",
+    "sympy>=1.12",
+    "numpy>=1.24",
+    "pandas>=2.0",
+    "matplotlib>=3.7",
+    "networkx>=3.1",
+    "scipy>=1.10"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.21"
 ]
 
 [build-system]

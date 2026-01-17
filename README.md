@@ -1,32 +1,42 @@
 # Cognitive Enhancement MCP Servers
 
-A collection of Model Context Protocol servers that provide cognitive enhancement tools for large language models.
+A curated collection of Model Context Protocol servers that provide structured reasoning frameworks for large language models.
 
-## Servers
+## Overview
 
-This monorepo contains the following MCP servers:
+These MCP servers transform how LLMs approach complex reasoning tasks by providing explicit cognitive scaffolding. Instead of free-form responses, models can leverage formal frameworks for argumentation, hypothesis testing, decision analysis, and more.
 
-1. **Structured Argumentation** - A server for formal dialectical reasoning
-2. **Visual Reasoning** - A server for diagrammatic thinking and spatial representation
-3. **Scientific Method** - A server for hypothesis testing and evidence evaluation
-4. **Analogical Reasoning** - A server for structured metaphorical thinking
-5. **Metacognitive Monitoring** - A server for knowledge assessment and confidence tracking
-6. **Decision Framework** - A server for structured decision analysis
-7. **Collaborative Reasoning** - A server for multi-perspective problem solving
-8. **Ethical Reasoning** - A server for evaluating actions with moral frameworks
-9. **Bias Detection** - A server for flagging potentially biased wording
-10. **Constraint Solver** - A server for validating logical and numeric constraints
-11. **Narrative Planner** - A server for generating simple story outlines
-12. **Goal Tracker** - A server for maintaining and completing objectives
-13. **Multimodal Synthesizer** - A server for combining text and image descriptions
+## Available Servers
 
-## Potential Future Servers
+### Core Reasoning Frameworks
 
-The following server ideas are under consideration to further extend model reasoning capabilities:
+1. **[Structured Argumentation](./src/structured-argumentation/)** - Formal dialectical reasoning with thesis-antithesis-synthesis progression, argument mapping, and relationship tracking.
 
-1. **Emotion-Aware Interaction** - Provides sentiment tracking and mood-aware responses to improve empathic communication.
-2. **Long-Term Memory** - Maintains persistent context across sessions for continuity and recall of past interactions.
+2. **[Scientific Method](./src/scientific-method/)** - Systematic hypothesis testing with explicit variable identification, experimental design, and evidence evaluation.
 
+3. **[Decision Framework](./src/decision-framework/)** - Multi-criteria decision analysis supporting expected utility, maximin, minimax-regret, and satisficing approaches.
+
+4. **[Ethical Reasoning](./src/ethical-reasoning/)** - Framework-based ethical evaluation using utilitarianism, deontology, virtue ethics, care ethics, and social contract theory.
+
+### Perspective and Insight Tools
+
+5. **[Analogical Reasoning](./src/analogical-reasoning/)** - Structured metaphorical thinking with explicit source-target mapping, inference generation, and analogy evaluation.
+
+6. **[Collaborative Reasoning](./src/collaborative-reasoning/)** - Multi-persona problem solving with diverse expert perspectives, disagreement management, and perspective synthesis.
+
+7. **[Visual Reasoning](./src/visual-reasoning/)** - Diagrammatic thinking and spatial representation for graphs, flowcharts, concept maps, and system architecture.
+
+### Meta-Cognitive Tools
+
+8. **[Metacognitive Monitoring](./src/metacognitive-monitoring/)** - Knowledge boundary tracking, claim classification, reasoning quality assessment, and bias detection.
+
+### Systems Modeling
+
+9. **[Systems Lab](./src/systems-lab/)** - Production-ready System Dynamics and Operations Research server. Provides real computational engines for quantitative modeling: solve LP/MIP problems, simulate stock-flow dynamics, perform sensitivity analysis, and generate visualizations. **[Full implementation complete - v2.0]**
+
+### Reasoning Orchestration
+
+10. **[Reasoning Loops](./src/reasoning-loops/)** - OODA-structured reasoning loops for systematic verification and analysis. Provides fact-checking, consistency validation, and bias scanning with embedded loop guidance.
 
 ## Installation
 
@@ -36,13 +46,13 @@ Each server can be installed individually:
 # Using npm
 npm install @waldzellai/structured-argumentation
 
-# Using yarn
+# Using yarn  
 yarn add @waldzellai/structured-argumentation
 ```
 
 ## Usage with Claude Desktop
 
-Add this to your `claude_desktop_config.json`:
+Add servers to your `claude_desktop_config.json`:
 
 ```json
 {
@@ -52,6 +62,13 @@ Add this to your `claude_desktop_config.json`:
       "args": [
         "-y",
         "@waldzellai/structured-argumentation"
+      ]
+    },
+    "scientific-method": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@waldzellai/scientific-method"
       ]
     }
   }
@@ -64,6 +81,7 @@ All servers are available as Docker images:
 
 ```bash
 docker run --rm -i waldzellai/structured-argumentation
+docker run --rm -i waldzellai/scientific-method
 ```
 
 ## Development
@@ -82,6 +100,40 @@ Build all packages:
 npm run build
 ```
 
+Run tests:
+
+```bash
+cd mcp-pewter-zero
+npm test
+```
+
+## Design Philosophy
+
+These servers implement cognitive scaffolding through:
+
+- **Explicit Structure**: Force decomposition of complex reasoning into well-defined steps
+- **State Management**: Track reasoning progress across iterations
+- **Relationship Mapping**: Maintain connections between ideas, arguments, and hypotheses
+- **Confidence Tracking**: Explicit confidence scores and uncertainty acknowledgment
+- **Iterative Refinement**: Support for multi-turn reasoning with state persistence
+
+## Use Cases
+
+- **Complex Analysis**: When problems require systematic decomposition
+- **Multi-Stakeholder Decisions**: Evaluating options with competing criteria
+- **Hypothesis Testing**: Scientific or business hypothesis evaluation
+- **Ethical Dilemmas**: Structured moral reasoning across frameworks
+- **System Design**: Architecture and process modeling
+- **Metacognition**: Knowledge boundary awareness and bias detection
+
+## Contributing
+
+Contributions are welcome! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
+
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+MIT License - see [LICENSE](./LICENSE) file for details.
+
+## Status
+
+These servers are production-ready cognitive tools built on the MCP protocol. The systems-lab server includes comprehensive tests. Additional test coverage for other servers is planned.

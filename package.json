@@ -36,11 +36,7 @@
     "@waldzellai/structured-argumentation": "*",
     "@waldzellai/ethical-reasoning": "*",
     "@waldzellai/visual-reasoning": "*",
-    "@waldzellai/bias-detection": "*",
-    "@waldzellai/constraint-solver": "*",
-    "@waldzellai/narrative-planner": "*",
-    "@waldzellai/goal-tracker": "*",
-    "@waldzellai/multimodal-synthesizer": "*"
+    "@waldzellai/reasoning-loops": "*"
   },
   "devDependencies": {
     "@types/node": "^22",
