@@ -1,5 +1,7 @@
 # Decision Framework MCP Server
 
+[![smithery badge](https://smithery.ai/badge/@waldzellai/decision-framework)](https://smithery.ai/server/@waldzellai/decision-framework)
+
 ## Motivation
 
 Language models often struggle with structured decision-making, particularly when multiple options, uncertain outcomes, and complex value trade-offs are involved. Current models frequently:
@@ -133,7 +135,7 @@ The server enforces clear problem definition:
 ### 2. Multi-Method Decision Analysis
 
 The server supports various decision frameworks:
-- **Expected Utility**: Probability × value calculations
+- **Expected Utility**: Probability ï¿½ value calculations
 - **Multi-Criteria Analysis**: Weighted scoring across criteria
 - **Maximin/Maximax**: Focus on worst/best possible outcomes
 - **Minimax Regret**: Minimizing maximum potential regret
@@ -175,6 +177,14 @@ For decisions with significant uncertainties, the model can provide expected val
 When evaluating policy options, the model can systematically account for impacts across different stakeholders.
 
 ## Implementation
+
+### Installing via Smithery
+
+To install Decision Framework Server for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@waldzellai/decision-framework):
+
+```bash
+npx -y @smithery/cli install @waldzellai/decision-framework --client claude
+```
 
 The server is implemented using TypeScript with:
 - A core DecisionFrameworkServer class
