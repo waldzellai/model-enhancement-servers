@@ -1,6 +1,6 @@
 # Scientific Method MCP Server
 
-[![smithery badge](https://smithery.ai/badge/@waldzellai/scientific-method)](https://smithery.ai/server/@waldzellai/scientific-method)
+[![LightNow capabilities](https://lightnow.ai/badge/io.github.waldzellai/scientific-method)](https://lightnow.ai/servers/io.github.waldzellai/scientific-method)
 
 ## Motivation
 
